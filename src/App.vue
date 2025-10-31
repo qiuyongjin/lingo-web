@@ -8,7 +8,10 @@ function init() {
       (window as any).nativeBridge.receiveMessage((message: any) => {
         const { action, data } = message
         if (action === 'annotation') {
-          const targetIndex = target.value.findIndex((v: any) => v.word === data.word)
+          // sentMessage({ action: 'debug', data })
+          const targetIndex = target.value.findIndex((v: any) => {
+            return v.line === data.line && v.wordIndex === data.wordIndex
+          })
           if (targetIndex > -1) {
             target.value[targetIndex] = data
           }

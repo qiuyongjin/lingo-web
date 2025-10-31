@@ -15,6 +15,8 @@ export function handleGetSelection(e: ClickData) {
   base[wordIndex] = `{${word}}`
   return {
     word,
+    line,
+    wordIndex,
     sentence: base.join(' ').replace(/ , /g, ', '),
   }
 }

@@ -14,6 +14,12 @@ const speakingWord = ref({
 })
 
 function handleClick(data: ClickData) {
+  const { word, line, wordIndex } = data
+  speakingWord.value = {
+    line,
+    wordIndex,
+    word,
+  }
   if (timer) {
     clearTimeout(timer)
     timer = null
@@ -29,11 +35,6 @@ function handleClick(data: ClickData) {
 
 function onSingleClick(e: ClickData) {
   const { word, line, wordIndex, titleOrBody } = e
-  speakingWord.value = {
-    line,
-    wordIndex,
-    word,
-  }
   const t = Object.assign([], useSentence.value.title)
   const b: string[] = Object.assign([], useSentence.value.body[line])
   let sentence: string[]
@@ -61,8 +62,11 @@ function onDoubleClick(e: ClickData) {
   sentMessage({ action: 'annotation', data })
 }
 
-function handleActivate(word: any): any {
-  return target.value.find((v: any) => word.toLowerCase() === v.word.toLowerCase())
+function handleActivate(word: any, line: number, wordIndex: number): any {
+  return target.value.find((v) => {
+    // const w = word.toLowerCase() === v.word.toLowerCase()
+    return v.line === line && v.wordIndex === wordIndex
+  })
 }
 function handleSpankWord(wordStr: any, index1: any, index2: any) {
   const { line, wordIndex, word } = speakingWord.value
@@ -81,9 +85,13 @@ onMounted(() => {
   <div class="page">
     <div class="paragraph title">
       <template v-for="(word, index) in useSentence.title" :key="word">
-        <span v-if="!matchPunctuation(word)" :class="{ target: handleActivate(word) }" @click="handleClick({ word, line: 0, wordIndex: index, titleOrBody: 'title' })">
+        <span
+          v-if="!matchPunctuation(word)"
+          :class="{ target: handleActivate(word, 0, index) }"
+          @click="handleClick({ word, line: 0, wordIndex: index, titleOrBody: 'title' })"
+        >
           {{ word }}
-          <small v-if="handleActivate(word)">{{ handleActivate(word).translate }}</small>
+          <small v-if="handleActivate(word, 0, index)">{{ handleActivate(word, 0, index).translate }}</small>
         </span>
         <span v-else style="margin-left: -6px;">{{ word }}</span>
       </template>
@@ -94,14 +102,14 @@ onMounted(() => {
           <span
             v-if="!matchPunctuation(word)"
             class="word"
-            :class="{ target: handleActivate(word), speaking: handleSpankWord(word, index, index2) }"
+            :class="{ target: handleActivate(word, index + 1, index2), speaking: handleSpankWord(word, index + 1, index2) }"
             data-type="body"
-            :data-line="index"
+            :data-line="index + 1"
             :data-word_index="index2"
-            @click="handleClick({ word, line: index, wordIndex: index2, titleOrBody: 'body' })"
+            @click="handleClick({ word, line: index + 1, wordIndex: index2, titleOrBody: 'body' })"
           >
             {{ word }}
-            <small v-if="handleActivate(word)" class="word-answer">{{ handleActivate(word).translate }}</small>
+            <small v-if="handleActivate(word, index + 1, index2)" class="word-answer">{{ handleActivate(word, index + 1, index2).translate }}</small>
           </span>
           <span v-else style="margin-left: -6px;">{{ word }}</span>
         </template>

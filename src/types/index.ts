@@ -1,5 +1,7 @@
 export interface Target {
   word: string
+  line: number
+  wordIndex: number
   translate: string
 }
 
