@@ -29,7 +29,6 @@ function handleClick(data: ClickData) {
 
 function onSingleClick(e: ClickData) {
   const { word, line, wordIndex, titleOrBody } = e
-  console.log('单击事件', word)
   speakingWord.value = {
     line,
     wordIndex,
