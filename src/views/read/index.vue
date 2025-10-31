@@ -48,6 +48,8 @@ function onSingleClick(e: ClickData) {
     action: 'clickWord',
     data: {
       word,
+      line,
+      wordIndex,
       sentence: sentence.join(' ').replace(/ , /g, ', '),
     },
   }
