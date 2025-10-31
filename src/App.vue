@@ -10,7 +10,9 @@ function init() {
         if (action === 'annotation') {
           // sentMessage({ action: 'debug', data })
           const targetIndex = target.value.findIndex((v: any) => {
-            return v.line === data.line && v.wordIndex === data.wordIndex
+            const index = v.line === data.line && v.wordIndex === data.wordIndex
+            const titleOrBody = v.titleOrBody === data.titleOrBody
+            return index && titleOrBody
           })
           if (targetIndex > -1) {
             target.value[targetIndex] = data

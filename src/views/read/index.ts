@@ -14,9 +14,7 @@ export function handleGetSelection(e: ClickData) {
   const base: string[] = Object.assign([], useSentence.value.body[line])
   base[wordIndex] = `{${word}}`
   return {
-    word,
-    line,
-    wordIndex,
+    ...e,
     sentence: base.join(' ').replace(/ , /g, ', '),
   }
 }

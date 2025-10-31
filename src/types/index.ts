@@ -3,6 +3,7 @@ export interface Target {
   line: number
   wordIndex: number
   translate: string
+  titleOrBody: string
 }
 
 export interface ExtractTitle {
