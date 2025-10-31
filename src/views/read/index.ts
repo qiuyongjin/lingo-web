@@ -2,10 +2,7 @@ import type { ClickData, Target } from '@/types'
 import { computed, ref } from 'vue'
 import { extractTitle, getAppHeight, sentMessage } from '@/utils'
 
-export const sentence = ref(`Test
-We had a picnic on the bank of the river.
-He broke the record in the 100-meter race.
-The news broke yesterday.`)
+export const sentence = ref('')
 export const target = ref<Target[]>([])
 
 export const useSentence = computed(() => {

@@ -68,6 +68,10 @@ function handleSpankWord(wordStr: any, index1: any, index2: any) {
   return line === index1 && wordIndex === index2 && word === wordStr
 }
 onMounted(() => {
+//   sentence.value = `Test
+// We had a picnic on the bank of the river.
+// He broke the record in the 100-meter race.
+// The news broke yesterday.`
   updateHeight(300)
 })
 </script>
