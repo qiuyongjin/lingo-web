@@ -135,7 +135,7 @@ onMounted(() => {
 
 div {
   color: white;
-  font-size: 20px;
+  font-size: 21px;
   line-height: 32px;
 }
 
@@ -146,7 +146,7 @@ div {
 }
 
 .body {
-  color: #ccc;
+  color: #c3c3c3;
 }
 
 .target {
@@ -166,7 +166,7 @@ div {
 .paragraph {
   display: flex;
   flex-wrap: wrap;
-  column-gap: 6px;
+  column-gap: 0.25em;
 }
 
 .word {
