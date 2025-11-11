@@ -32,10 +32,9 @@ export function splitIntoWords(text: any): RegExpMatchArray | [] {
  * 从文本中提取标题（第一行）和正文。
  * 若只有一行，则返回 null 标题。
  */
-export function extractTitle(text: any): ExtractTitle {
-  const texts = splitIntoParagraphs(text.trim())
+export function extractTitle(texts: string[]): ExtractTitle {
   if (texts.length <= 1) {
-    return { title: [], body: text }
+    return { title: [], body: [texts] }
   }
   const title = splitIntoWords(texts[0])
   const body = texts.slice(1).map(p => splitIntoWords(p))

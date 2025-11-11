@@ -2,7 +2,7 @@
 import type { ClickData } from '@/types'
 import { onMounted, ref } from 'vue'
 import { matchPunctuation, sentMessage } from '@/utils'
-import { handleGetSelection, target, updateHeight, useSentence } from '@/views/read/index.ts'
+import { handleGetSelection, sentences, target, updateHeight, useSentence } from '@/views/read/index.ts'
 
 let timer: number | null = null
 const delay = 250 // 毫秒内第二次点击算双击
@@ -73,6 +73,9 @@ function handleSpankWord(wordStr: any, index1: any, index2: any) {
   const { line, wordIndex, word } = speakingWord.value
   return line === index1 && wordIndex === index2 && word === wordStr
 }
+function playSentence(index: number) {
+  sentMessage({ action: 'playSentence', data: { sentence: sentences.value[index] } })
+}
 onMounted(() => {
 //   sentence.value = `Test
 // We had a picnic on the bank of the river.
@@ -84,7 +87,7 @@ onMounted(() => {
 
 <template>
   <div class="page">
-    <div class="paragraph title">
+    <div v-if="useSentence.title?.length" class="paragraph title">
       <template v-for="(word, index) in useSentence.title" :key="word">
         <span
           v-if="!matchPunctuation(word)"
@@ -98,6 +101,9 @@ onMounted(() => {
         </span>
         <span v-else style="margin-left: -6px;">{{ word }}</span>
       </template>
+      <span class="play-btn" @click="playSentence(0)">
+        <img width="18" src="../../assets/play.svg" alt="play">
+      </span>
     </div>
     <template v-for="(line, index) in useSentence.body" :key="index">
       <div class="paragraph body">
@@ -121,6 +127,9 @@ onMounted(() => {
           </span>
           <span v-else style="margin-left: -6px;">{{ word }}</span>
         </template>
+        <span v-if="line.length" class="play-btn" @click="playSentence(index + 1)">
+          <img width="12" src="../../assets/play.svg" alt="play">
+        </span>
       </div>
     </template>
   </div>
@@ -172,5 +181,8 @@ div {
 .word {
   display: flex;
   align-items: baseline;
+}
+.play-btn {
+  color: #c3c3c3;
 }
 </style>
