@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { handleGetSelection, sentence, target, updateHeight } from '@/views/read'
+import { sentence, target, updateHeight } from '@/views/read'
 
 function init() {
-  (window as any).handleGetSelection = handleGetSelection
+  (window as any).handleGetSelection = function () {
+    const selection = (window as any).getSelection().toString()
+    // sentMessage({ action: 'debug', data: selection })
+    return { text: selection }
+  }
   window.onload = () => {
     try {
       (window as any).nativeBridge.receiveMessage((message: any) => {
