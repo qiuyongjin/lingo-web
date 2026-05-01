@@ -1,8 +1,8 @@
 import type { ClickData, Target } from '@/types'
 import { computed, ref } from 'vue'
-import { extractTitle, getAppHeight, sentMessage, splitIntoParagraphs } from '@/utils'
+import { extractTitle, getAppHeight, splitIntoParagraphs } from '@/utils'
 
-export const sentence = ref('')
+export const sentence = ref('hello world')
 export const target = ref<Target[]>([])
 
 // 把文章以段落拆分
@@ -29,6 +29,8 @@ export function handleGetSelection(e: ClickData) {
  */
 export function updateHeight(delay = 0) {
   setTimeout(() => {
-    sentMessage({ action: 'updateHeight', data: { a: 1, height: getAppHeight() } })
+    if (!window.nativeBridge)
+      return
+    window.nativeBridge.send({ type: 'updateHeight', payload: { type: 'appHeight', height: getAppHeight() } })
   }, delay)
 }
