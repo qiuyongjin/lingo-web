@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { ClickData } from '@/types'
 import { onMounted, ref } from 'vue'
-import { matchPunctuation, sentMessage } from '@/utils'
-import { handleGetSelection, sentences, target, updateHeight, useSentence } from '@/views/read/index.ts'
+import { matchPunctuation } from '@/utils'
+import { handleGetSelection, sentences, target, useSentence } from '@/views/read/index.ts'
 
 let timer: number | null = null
 const delay = 250 // 毫秒内第二次点击算双击
@@ -48,18 +48,18 @@ function onSingleClick(e: ClickData) {
   }
   b[wordIndex] = `{${word}}`
   const data = {
-    action: 'clickWord',
-    data: {
+    type: 'clickWord',
+    payload: {
       ...e,
       sentence: sentence.join(' ').replace(/ , /g, ', '),
     },
   }
-  sentMessage(data)
+  window.nativeBridge.send(data)
 }
 
 function onDoubleClick(e: ClickData) {
   const data = handleGetSelection(e)
-  sentMessage({ action: 'annotation', data })
+  window.nativeBridge.send({ type: 'annotation', payload: data })
 }
 
 function handleActivate(word: any, line: number, wordIndex: number, titleOrBody: string): any {
@@ -74,14 +74,14 @@ function handleSpankWord(wordStr: any, index1: any, index2: any) {
   return line === index1 && wordIndex === index2 && word === wordStr
 }
 function playSentence(index: number) {
-  sentMessage({ action: 'playSentence', data: { sentence: sentences.value[index] } })
+  window.nativeBridge.send({ type: 'playSentence', payload: { sentence: sentences.value[index] } })
 }
 onMounted(() => {
 //   sentence.value = `Test
 // We had a picnic on the bank of the river.
 // He broke the record in the 100-meter race.
 // The news broke yesterday.`
-  updateHeight(300)
+  // updateHeight(100)
 })
 </script>
 
@@ -136,6 +136,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.test-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .page {
   display: flex;
   flex-direction: column;

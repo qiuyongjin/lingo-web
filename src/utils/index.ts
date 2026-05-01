@@ -1,4 +1,4 @@
-import type { ExtractTitle, SentMessageData } from '@/types'
+import type { ExtractTitle } from '@/types'
 
 /**
  * 将字符串按段落分割成数组
@@ -18,17 +18,6 @@ export function splitIntoParagraphs(text: string): string[] {
 }
 
 /**
- * 匹配带连字符的单词，普通单词，或单个标点符号
- * @param text
- * @return {RegExpMatchArray|*[]}
- */
-export function splitIntoWords(text: any): RegExpMatchArray | [] {
-  if (!text || typeof text !== 'string')
-    return []
-  return text.match(/\w+(?:-\w+)*|[^\s\w]/g) || []
-}
-
-/**
  * 从文本中提取标题（第一行）和正文。
  * 若只有一行，则返回 null 标题。
  */
@@ -36,17 +25,9 @@ export function extractTitle(texts: string[]): ExtractTitle {
   if (texts.length <= 1) {
     return { title: [], body: [texts] }
   }
-  const title = splitIntoWords(texts[0])
-  const body = texts.slice(1).map(p => splitIntoWords(p))
+  const title = tokenize(texts[0] ?? '')
+  const body = texts.slice(1).map(p => tokenize(p))
   return { title, body }
-}
-
-export function sentMessage(data: SentMessageData) {
-  try {
-    (window as any).webkit.messageHandlers.bridge.postMessage(data)
-  }
-  catch {
-  }
 }
 
 export function getAppHeight() {
@@ -61,4 +42,35 @@ export function getAppHeight() {
  */
 export function matchPunctuation(text: any): boolean {
   return !/^[a-z0-9]/i.test(text)
+}
+
+/**
+ * 将英文句子拆分为单词 token（保留缩写、带撇号的词、带连字符的词、时间格式等）
+ * @param text
+ */
+export function tokenize(text: string) {
+  if (!text)
+    return []
+
+  // 匹配规则说明：
+  // 1. 时间：7:00, 07:30:15
+  // 2. 数字（含小数）：123, 3.14
+  // 3. 单词：支持缩写、连字符、撇号，如 it's, o'clock, rock'n'roll
+  // 4. 标点符号：.,!?;:"'()[]{}—-
+  const re = /\d+:\d{2}(?::\d{2})?|\d+(?:\.\d+)?|[A-Z]+(?:[-'][A-Z]+)*|[.,!?;:"'(){}[\]—-]/gi
+
+  return text.match(re) || []
+}
+
+export function tokenizeV1(text: string): string[] {
+  if (!text)
+    return []
+
+  // 规则：
+  // 1. 时间数字，如 7:00、07:30:15
+  // 2. 纯数字（包括小数、序号等）
+  // 3. 单词，允许内部撇号或连字符（例如 it's、o'clock、state-of-the-art）
+  const re = /\d+:\d{2}(?::\d{2})?|\d+(?:\.\d+)?|[A-Z]+(?:[-'][A-Z]+)*/gi
+
+  return text.match(re) || []
 }
