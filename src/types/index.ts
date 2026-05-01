@@ -13,11 +13,6 @@ export interface ExtractTitle {
 
 export type ExtractTitleKey = 'title' | 'body'
 
-export interface SentMessageData {
-  action: string
-  data: object
-}
-
 export interface ClickData {
   word: string
   line: number
