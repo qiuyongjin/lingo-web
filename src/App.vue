@@ -2,12 +2,6 @@
 import { sentence, target, updateHeight } from '@/views/read'
 
 function init() {
-  (window as any).handleGetSelection = function () {
-    const selection = (window as any).getSelection().toString()
-    // window.nativeBridge.send({ type: 'debug', payload: { data: selection } })
-    return { text: selection }
-  }
-
   if (!window.nativeBridge)
     return
 
