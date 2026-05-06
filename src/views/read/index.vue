@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { ClickData } from '@/types'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { matchPunctuation } from '@/utils'
+import { initWordBoundaryExpand } from '@/utils/word-boundary-expand'
 import { handleGetSelection, sentences, target, useSentence } from '@/views/read/index.ts'
 
 let timer: number | null = null
@@ -81,12 +82,15 @@ function handleSpankWord(wordStr: any, index1: any, index2: any) {
 function playSentence(index: number) {
   window.nativeBridge.send({ type: 'playSentence', payload: { sentence: sentences.value[index] } })
 }
+let cleanupExpand: (() => void) | null = null
+
 onMounted(() => {
-//   sentence.value = `Test
-// We had a picnic on the bank of the river.
-// He broke the record in the 100-meter race.
-// The news broke yesterday.`
-  // updateHeight(100)
+  cleanupExpand = initWordBoundaryExpand()
+})
+
+onUnmounted(() => {
+  cleanupExpand?.()
+  cleanupExpand = null
 })
 </script>
 
