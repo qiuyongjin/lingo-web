@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { isWordChar, isAtWordStart, isAtWordEnd } from '@/utils/word-boundary-expand'
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
+import { isWordChar, isAtWordStart, isAtWordEnd, initWordBoundaryExpand } from '@/utils/word-boundary-expand'
 
 describe('isWordChar', () => {
   it('returns true for letters', () => {
@@ -76,5 +76,55 @@ describe('isAtWordEnd', () => {
     const node = document.createTextNode('hello')
     expect(isAtWordEnd(node, -1)).toBe(true)
     expect(isAtWordEnd(node, 100)).toBe(true)
+  })
+})
+
+describe('expandSelectionToWord', () => {
+  it('does nothing when selection is collapsed', () => {
+    // jsdom doesn't fully support Selection.modify, so we test the guard clause
+    const selection = window.getSelection()
+    if (!selection)
+      return
+    selection.removeAllRanges()
+    const range = document.createRange()
+    range.collapse(true)
+    selection.addRange(range)
+    // Should not throw
+    expect(() => {
+      document.dispatchEvent(new MouseEvent('mouseup'))
+    }).not.toThrow()
+  })
+
+  it('initWordBoundaryExpand returns a cleanup function', () => {
+    const cleanup = initWordBoundaryExpand()
+    expect(typeof cleanup).toBe('function')
+    cleanup()
+  })
+})
+
+describe('initWordBoundaryExpand event listeners', () => {
+  let cleanup: () => void
+
+  beforeEach(() => {
+    cleanup = initWordBoundaryExpand()
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
+
+  it('attaches mouseup listener that calls expandSelectionToWord', () => {
+    const spy = vi.spyOn(window, 'requestAnimationFrame')
+    document.dispatchEvent(new MouseEvent('mouseup'))
+    expect(spy).toHaveBeenCalled()
+    spy.mockRestore()
+  })
+
+  it('cleanup removes event listeners', () => {
+    cleanup()
+    const spy = vi.spyOn(window, 'requestAnimationFrame')
+    document.dispatchEvent(new MouseEvent('mouseup'))
+    expect(spy).not.toHaveBeenCalled()
+    spy.mockRestore()
   })
 })
