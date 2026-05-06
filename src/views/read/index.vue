@@ -37,16 +37,19 @@ function handleClick(data: ClickData) {
 
 function onSingleClick(e: ClickData) {
   const { word, line, wordIndex, titleOrBody } = e
-  const t = Object.assign([], useSentence.value.title)
-  const b: string[] = Object.assign([], useSentence.value.body[line])
+  const title: string[] = Object.assign([], useSentence.value.title)
+  const body: string[] = Object.assign([], useSentence.value.body[line])
   let sentence: string[]
+
   if (titleOrBody === 'title') {
-    sentence = t
+    title[wordIndex] = `{${word}}`
+    sentence = title
   }
   else {
-    sentence = b
+    body[wordIndex] = `{${word}}`
+    sentence = body
   }
-  b[wordIndex] = `{${word}}`
+
   const data = {
     type: 'clickWord',
     payload: {
@@ -54,7 +57,9 @@ function onSingleClick(e: ClickData) {
       sentence: sentence.join(' ').replace(/ , /g, ', '),
     },
   }
-  window.nativeBridge.send(data)
+  if (window.nativeBridge) {
+    window.nativeBridge.send(data)
+  }
 }
 
 function onDoubleClick(e: ClickData) {
