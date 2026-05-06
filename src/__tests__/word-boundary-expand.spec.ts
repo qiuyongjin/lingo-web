@@ -18,6 +18,13 @@ describe('isWordChar', () => {
     expect(isWordChar(' ')).toBe(false)
     expect(isWordChar(',')).toBe(false)
   })
+  it('returns true for underscore', () => {
+    expect(isWordChar('_')).toBe(true)
+  })
+  it('returns false for null and undefined', () => {
+    expect(isWordChar(null)).toBe(false)
+    expect(isWordChar(undefined)).toBe(false)
+  })
   it('returns false for empty or multi-char strings', () => {
     expect(isWordChar('')).toBe(false)
     expect(isWordChar('ab')).toBe(false)
@@ -41,6 +48,11 @@ describe('isAtWordStart', () => {
     const node = document.createTextNode('.hello')
     expect(isAtWordStart(node, 0)).toBe(true)
   })
+  it('returns true for out-of-bounds offset', () => {
+    const node = document.createTextNode('hello')
+    expect(isAtWordStart(node, -1)).toBe(true)
+    expect(isAtWordStart(node, 100)).toBe(true)
+  })
 })
 
 describe('isAtWordEnd', () => {
@@ -59,5 +71,10 @@ describe('isAtWordEnd', () => {
   it('returns false at offset 0', () => {
     const node = document.createTextNode('hello')
     expect(isAtWordEnd(node, 0)).toBe(false)
+  })
+  it('returns true for out-of-bounds offset', () => {
+    const node = document.createTextNode('hello')
+    expect(isAtWordEnd(node, -1)).toBe(true)
+    expect(isAtWordEnd(node, 100)).toBe(true)
   })
 })
