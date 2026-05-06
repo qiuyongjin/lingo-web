@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { isWordChar, isAtWordStart, isAtWordEnd, initWordBoundaryExpand } from '@/utils/word-boundary-expand'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { initWordBoundaryExpand, isAtWordEnd, isAtWordStart, isWordChar } from '@/utils/word-boundary-expand'
 
 describe('isWordChar', () => {
   it('returns true for letters', () => {
@@ -10,7 +10,7 @@ describe('isWordChar', () => {
     expect(isWordChar('5')).toBe(true)
   })
   it('returns true for apostrophe and hyphen', () => {
-    expect(isWordChar("'")).toBe(true)
+    expect(isWordChar('\'')).toBe(true)
     expect(isWordChar('-')).toBe(true)
   })
   it('returns false for punctuation and spaces', () => {
