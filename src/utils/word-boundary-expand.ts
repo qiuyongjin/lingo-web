@@ -1,5 +1,12 @@
+const WORD_CHAR_RE = /[\w'\-]/
+
+interface TextPoint {
+  node: Text
+  offset: number
+}
+
 export function isWordChar(ch: string | null | undefined): boolean {
-  return !!ch && ch.length === 1 && /[\w'\-]/.test(ch)
+  return !!ch && ch.length === 1 && WORD_CHAR_RE.test(ch)
 }
 
 export function isAtWordStart(textNode: Text, offset: number): boolean {
@@ -26,14 +33,22 @@ export function isAtWordEnd(textNode: Text, offset: number): boolean {
   return !isWordChar(text[offset])
 }
 
+function toTextPoint(node: Node | null, offset: number): TextPoint | null {
+  if (!node || node.nodeType !== Node.TEXT_NODE)
+    return null
+  return { node: node as Text, offset }
+}
+
 function expandSelectionToWord(): void {
   const selection = window.getSelection()
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed)
     return
 
   const range = selection.getRangeAt(0)
-  const origStart = { node: range.startContainer as Text, offset: range.startOffset }
-  const origEnd = { node: range.endContainer as Text, offset: range.endOffset }
+  const origStart = toTextPoint(range.startContainer, range.startOffset)
+  const origEnd = toTextPoint(range.endContainer, range.endOffset)
+  if (!origStart || !origEnd)
+    return
 
   let newStart = origStart
   let newEnd = origEnd
@@ -41,13 +56,17 @@ function expandSelectionToWord(): void {
   if (!isAtWordStart(origStart.node, origStart.offset)) {
     selection.collapse(origStart.node, origStart.offset)
     selection.modify('extend', 'backward', 'word')
-    newStart = { node: selection.focusNode as Text, offset: selection.focusOffset }
+    const expanded = toTextPoint(selection.focusNode, selection.focusOffset)
+    if (expanded)
+      newStart = expanded
   }
 
   if (!isAtWordEnd(origEnd.node, origEnd.offset)) {
     selection.collapse(origEnd.node, origEnd.offset)
     selection.modify('extend', 'forward', 'word')
-    newEnd = { node: selection.focusNode as Text, offset: selection.focusOffset }
+    const expanded = toTextPoint(selection.focusNode, selection.focusOffset)
+    if (expanded)
+      newEnd = expanded
   }
 
   selection.setBaseAndExtent(
@@ -59,12 +78,22 @@ function expandSelectionToWord(): void {
 }
 
 export function initWordBoundaryExpand(): () => void {
+  let touchTimer: ReturnType<typeof setTimeout> | null = null
+
   function onMouseUp() {
+    if (touchTimer) {
+      clearTimeout(touchTimer)
+      touchTimer = null
+      return
+    }
     requestAnimationFrame(expandSelectionToWord)
   }
 
   function onTouchEnd() {
-    setTimeout(expandSelectionToWord, 50)
+    touchTimer = setTimeout(() => {
+      expandSelectionToWord()
+      touchTimer = null
+    }, 50)
   }
 
   document.addEventListener('mouseup', onMouseUp)
@@ -73,5 +102,9 @@ export function initWordBoundaryExpand(): () => void {
   return () => {
     document.removeEventListener('mouseup', onMouseUp)
     document.removeEventListener('touchend', onTouchEnd)
+    if (touchTimer) {
+      clearTimeout(touchTimer)
+      touchTimer = null
+    }
   }
 }
