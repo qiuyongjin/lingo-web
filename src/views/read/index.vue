@@ -114,7 +114,6 @@ onUnmounted(() => {
         <img width="18" src="../../assets/play.svg" alt="play">
       </span>
     </div>
-    {{ useSentence.body }}
     <template v-for="(line, index) in useSentence.body" :key="index">
       <div class="paragraph body">
         <template v-for="(word, index2) in line" :key="word">
