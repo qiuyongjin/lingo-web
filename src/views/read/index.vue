@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { ClickData } from '@/types'
 import { onMounted, onUnmounted, ref } from 'vue'
-import { matchPunctuation } from '@/utils'
 import { initWordBoundaryExpand } from '@/utils/word-boundary-expand'
 import { handleGetSelection, sentences, target, useSentence } from '@/views/read/index.ts'
 
@@ -99,7 +98,6 @@ onUnmounted(() => {
     <div v-if="useSentence.title?.length" class="paragraph title">
       <template v-for="(word, index) in useSentence.title" :key="word">
         <span
-          v-if="!matchPunctuation(word)"
           :class="{ target: handleActivate(word, 0, index, 'title') }"
           @click="handleClick({ word, line: 0, wordIndex: index, titleOrBody: 'title' })"
         >
@@ -108,7 +106,6 @@ onUnmounted(() => {
             {{ handleActivate(word, 0, index, 'title').translate }}
           </small>
         </span>
-        <span v-else>{{ word }}</span>
       </template>
       <span class="play-btn" @click="playSentence(0)">
         <img width="18" src="../../assets/play.svg" alt="play">
@@ -118,7 +115,6 @@ onUnmounted(() => {
       <div class="paragraph body">
         <template v-for="(word, index2) in line" :key="word">
           <span
-            v-if="!matchPunctuation(word)"
             class="word"
             :class="{ target: handleActivate(word, index, index2, 'body'), speaking: handleSpankWord(word, index, index2) }"
             data-type="body"
@@ -134,7 +130,6 @@ onUnmounted(() => {
               {{ handleActivate(word, index, index2, 'body').translate }}
             </small>
           </span>
-          <span v-else>{{ word }}</span>
         </template>
         <span v-if="line.length" class="play-btn" @click="playSentence(index + 1)">
           <img width="12" src="../../assets/play.svg" alt="play">
@@ -163,8 +158,8 @@ div {
 }
 
 .title {
-  font-size: 34px;
-  line-height: 40px;
+  font-size: 34px !important;
+  line-height: 40px !important;
   font-weight: bold;
 }
 
@@ -188,5 +183,16 @@ div {
 
 .play-btn {
   color: #c3c3c3;
+}
+
+.paragraph {
+  font-size: 0;
+  word-break: break-word;
+}
+
+.word {
+  word-break: break-word;
+  font-size: 21px;
+  line-height: 32px;
 }
 </style>
