@@ -25,6 +25,7 @@ pnpm lint:fix     # Lint and auto-fix
 **Native Bridge**: `window.nativeBridge.send()` communicates with iOS. Always check `if (window.nativeBridge)` before calling.
 
 **Key directories**:
+
 - `src/views/read/` — Main reading interface (click-to-highlight, word selection, playback)
 - `src/utils/` — Text tokenization, paragraph splitting
 - `src/types/` — TypeScript interfaces (ClickData, Target, ExtractTitle)
