@@ -26,28 +26,10 @@
         margin: 0;
         padding: 1.5rem;
       }
-
-      /* 原句子段落样式，保留原有可读性 */
-      .clickable-sentence {
-        font-size: 1.45rem;
-        line-height: 1.65;
-        font-weight: 450;
-        color: #2d2b26;
-        margin: 0;
-        letter-spacing: 0.01em;
-        word-break: break-word;
-        font-family: 'Segoe UI', 'Roboto', 'Georgia', serif;
-      }
-
-      /* 选中高亮扩展后的效果 (原生浏览器蓝色) 依然可见 */
-      ::selection {
-        background: #f3bc7b;
-        color: #2c2018;
-      }
     </style>
   </head>
   <body>
-    <p class="clickable-sentence" id="magicSentence"></p>
+    <p id="magicSentence"></p>
 
     <script>
       ;(function () {
@@ -74,6 +56,7 @@
         sentenceContainer.innerHTML = ''
 
         const tokens = tokenizeSentence(originalText)
+        console.log(tokens)
         const wordElementsList = []
 
         tokens.forEach((token) => {
@@ -87,14 +70,11 @@
               const clickedWord = token.text
               console.log(`[点击单词] ${clickedWord}`)
               updateLastClickedWord(clickedWord)
-              wordSpan.style.transform = 'scale(0.97)'
-              setTimeout(() => {
-                if (wordSpan) wordSpan.style.transform = ''
-              }, 120)
             })
             sentenceContainer.appendChild(wordSpan)
             wordElementsList.push(wordSpan)
           } else {
+            console.log(token.text)
             const separatorNode = document.createTextNode(token.text)
             sentenceContainer.appendChild(separatorNode)
           }
@@ -208,22 +188,6 @@
         // 提示信息
         console.log('🍃 句子已初始化，每个单词均为可点击控件。拖拽选中单词局部，松手自动扩展完整单词！')
         console.log(`📖 当前句子共有 ${wordElementsList.length} 个可点击单词。`)
-
-        const sentenceP = document.getElementById('magicSentence')
-        if (sentenceP) {
-          sentenceP.style.userSelect = 'text'
-        }
-
-        const style = document.createElement('style')
-        style.textContent = `
-            .clickable-sentence {
-                word-break: break-word;
-            }
-            .word-token {
-                white-space: normal;
-            }
-        `
-        document.head.appendChild(style)
       })()
     </script>
   </body>
