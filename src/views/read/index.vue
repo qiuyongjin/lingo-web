@@ -108,12 +108,13 @@ onUnmounted(() => {
             {{ handleActivate(word, 0, index, 'title').translate }}
           </small>
         </span>
-        <span v-else style="margin-left: -6px;">{{ word }}</span>
+        <span v-else>{{ word }}</span>
       </template>
       <span class="play-btn" @click="playSentence(0)">
         <img width="18" src="../../assets/play.svg" alt="play">
       </span>
     </div>
+    {{ useSentence.body }}
     <template v-for="(line, index) in useSentence.body" :key="index">
       <div class="paragraph body">
         <template v-for="(word, index2) in line" :key="word">
@@ -134,7 +135,7 @@ onUnmounted(() => {
               {{ handleActivate(word, index, index2, 'body').translate }}
             </small>
           </span>
-          <span v-else style="margin-left: -6px;">{{ word }}</span>
+          <span v-else>{{ word }}</span>
         </template>
         <span v-if="line.length" class="play-btn" @click="playSentence(index + 1)">
           <img width="12" src="../../assets/play.svg" alt="play">
@@ -186,16 +187,6 @@ div {
   color: rgb(255, 141, 40);
 }
 
-.paragraph {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 0.25em;
-}
-
-.word {
-  display: flex;
-  align-items: baseline;
-}
 .play-btn {
   color: #c3c3c3;
 }
