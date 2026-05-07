@@ -31,6 +31,6 @@ export function updateHeight(delay = 0) {
   setTimeout(() => {
     if (!window.nativeBridge)
       return
-    window.nativeBridge.send({ type: 'updateHeight', payload: { type: 'appHeight', height: getAppHeight() } })
+    window.nativeBridge.send({ type: 'updateHeight', payload: { height: getAppHeight() } })
   }, delay)
 }
