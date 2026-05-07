@@ -24,7 +24,7 @@ function init() {
     }
     if (type === 'setContent') {
       sentence.value = payload.data
-      // updateHeight()
+      updateHeight()
     }
   }
 }
