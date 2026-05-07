@@ -2,7 +2,7 @@ import type { ClickData, Target } from '@/types'
 import { computed, ref } from 'vue'
 import { extractTitle, getAppHeight, splitIntoParagraphs } from '@/utils'
 
-export const sentence = ref('test bug\nhello world')
+export const sentence = ref('nhello world\nI like a cute cat, especially a Persian cat, which is really adorable and has soft fur.')
 export const target = ref<Target[]>([])
 
 // 把文章以段落拆分
