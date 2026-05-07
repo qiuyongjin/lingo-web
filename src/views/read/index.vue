@@ -113,7 +113,7 @@ onUnmounted(() => {
     </div>
     <template v-for="(line, index) in useSentence.body" :key="index">
       <div class="paragraph body">
-        <template v-for="(word, index2) in line" :key="word">
+        <template v-for="(word, index2) in line" :key="index2">
           <span
             class="word"
             :class="{ target: handleActivate(word, index, index2, 'body'), speaking: handleSpankWord(word, index, index2) }"
