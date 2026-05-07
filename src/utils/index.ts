@@ -57,7 +57,8 @@ export function tokenize(text: string) {
   // 2. 数字（含小数）：123, 3.14
   // 3. 单词：支持缩写、连字符、撇号，如 it's, o'clock, rock'n'roll
   // 4. 标点符号：.,!?;:"'()[]{}—-
-  const re = /\d+:\d{2}(?::\d{2})?|\d+(?:\.\d+)?|[A-Z]+(?:[-'][A-Z]+)*|[.,!?;:"'(){}[\]—-]/gi
+  // const re = /\d+:\d{2}(?::\d{2})?|\d+(?:\.\d+)?|[A-Z]+(?:[-'][A-Z]+)*|[.,!?;:"'(){}[\]—-]/gi
+  const re = /\w+(?:[-']\w+)*|[^\w\s]+\s*/g
 
   return text.match(re) || []
 }
