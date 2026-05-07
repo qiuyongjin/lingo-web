@@ -167,10 +167,6 @@ div {
   color: #c3c3c3;
 }
 
-.target {
-  display: flex;
-}
-
 .speaking {
   color: #fff;
   text-decoration: underline;
