@@ -27,60 +27,6 @@
         padding: 1.5rem;
       }
 
-      /* 主卡片 */
-      .card {
-        max-width: 900px;
-        width: 100%;
-        background: rgba(255, 255, 245, 0.97);
-        backdrop-filter: blur(0px);
-        border-radius: 2.5rem;
-        box-shadow:
-          0 30px 45px -20px rgba(0, 0, 0, 0.3),
-          0 1px 2px rgba(0, 0, 0, 0.05);
-        padding: 2rem 2rem 2.2rem;
-        transition: all 0.2s;
-        border: 1px solid rgba(255, 245, 215, 0.8);
-      }
-
-      /* 装饰标题区 */
-      .title-area {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        margin-bottom: 1rem;
-        border-bottom: 2px dotted #f0cfb0;
-        padding-bottom: 0.6rem;
-      }
-      h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #9b6a3c;
-        margin: 0;
-        letter-spacing: -0.2px;
-        font-family: 'Segoe UI', cursive;
-      }
-      .badge {
-        background: #f7e2ce;
-        border-radius: 30px;
-        padding: 0.2rem 1rem;
-        font-size: 0.7rem;
-        color: #a5612a;
-        font-weight: 500;
-      }
-
-      /* 句子容器区 */
-      .sentence-container {
-        background: #fffef7;
-        border-radius: 1.8rem;
-        padding: 1.8rem 2rem;
-        margin: 1.2rem 0 1.8rem 0;
-        box-shadow:
-          inset 0 1px 5px rgba(0, 0, 0, 0.02),
-          0 6px 12px -8px rgba(0, 0, 0, 0.1);
-        border: 1px solid #ffe6cf;
-      }
-
       /* 原句子段落样式，保留原有可读性 */
       .clickable-sentence {
         font-size: 1.45rem;
@@ -93,102 +39,6 @@
         font-family: 'Segoe UI', 'Roboto', 'Georgia', serif;
       }
 
-      /* 可点击单词的高亮样式 (无过分强调，保持美观) */
-      .word-token {
-        display: inline-block;
-        cursor: pointer;
-        border-radius: 0.4rem;
-        transition:
-          background 0.1s ease,
-          transform 0.05s linear;
-        padding: 0 0.05rem;
-        background-color: rgba(244, 214, 184, 0.2);
-        color: #b45f2b;
-        font-weight: 520;
-      }
-
-      .word-token:active {
-        background-color: #ffce9a;
-        transform: scale(0.98);
-      }
-
-      /* 输出面板: 显示点击单词 + 控制台友好 */
-      .feedback-panel {
-        background: #fef6ed;
-        border-radius: 1.5rem;
-        padding: 0.8rem 1.2rem;
-        margin-top: 1rem;
-        font-family: monospace;
-        border-left: 5px solid #f3bc7b;
-      }
-
-      .click-log {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
-        font-size: 0.95rem;
-      }
-
-      .log-label {
-        background: #e7cfb5;
-        padding: 0.2rem 0.8rem;
-        border-radius: 2rem;
-        font-weight: 600;
-        color: #7a4a1f;
-      }
-
-      .last-word {
-        background: #fff0e2;
-        padding: 0.3rem 1rem;
-        border-radius: 2rem;
-        font-weight: 700;
-        color: #bc6f2c;
-        word-break: break-all;
-        max-width: 280px;
-      }
-
-      .info-note {
-        font-size: 0.75rem;
-        color: #ad8a67;
-        margin-top: 0.6rem;
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        border-top: 1px dashed #efdbc8;
-        padding-top: 0.6rem;
-      }
-
-      button {
-        background: none;
-        border: none;
-        font: inherit;
-      }
-
-      .clear-log {
-        background: #e7d9cd;
-        border: none;
-        padding: 0.2rem 1rem;
-        border-radius: 2rem;
-        font-size: 0.7rem;
-        cursor: pointer;
-        font-weight: 500;
-        transition: 0.1s;
-        margin-left: auto;
-      }
-
-      .clear-log:hover {
-        background: #d8c6b6;
-        transform: translateY(-1px);
-      }
-
-      hr {
-        margin: 0.7rem 0;
-        border: 0;
-        height: 1px;
-        background: linear-gradient(to right, #eedbcb, transparent);
-      }
-
       /* 选中高亮扩展后的效果 (原生浏览器蓝色) 依然可见 */
       ::selection {
         background: #f3bc7b;
@@ -197,18 +47,7 @@
     </style>
   </head>
   <body>
-    <div class="card">
-      <div class="title-area">
-        <h2>🐾 波斯猫 · 意趣单词本</h2>
-        <div class="badge">✨ 点击单词 ✨ 智能选词扩展</div>
-      </div>
-      <!-- 原始句子容器: 动态生成单词包裹 -->
-      <div class="sentence-container">
-        <p class="clickable-sentence" id="magicSentence">
-          <!-- 原始静态占位，实际会被JS动态生成结构化内容 -->
-        </p>
-      </div>
-    </div>
+    <p class="clickable-sentence" id="magicSentence"></p>
 
     <script>
       ;(function () {
@@ -260,27 +99,6 @@
             sentenceContainer.appendChild(separatorNode)
           }
         })
-
-        // UI更新最近点击的单词
-        const lastWordSpan = document.getElementById('lastClickedWord')
-        function updateLastClickedWord(word) {
-          if (lastWordSpan) {
-            lastWordSpan.textContent = word
-            lastWordSpan.style.opacity = '0.7'
-            setTimeout(() => {
-              if (lastWordSpan) lastWordSpan.style.opacity = '1'
-            }, 150)
-          }
-        }
-
-        // 清空记录按钮
-        const clearBtn = document.getElementById('clearLogBtn')
-        if (clearBtn) {
-          clearBtn.addEventListener('click', () => {
-            if (lastWordSpan) lastWordSpan.textContent = '—'
-            console.log('🗑️ 点击单词记录已清空')
-          })
-        }
 
         // ---------- 核心: 单词扩展选择功能 ----------
         function isWordChar(ch) {
