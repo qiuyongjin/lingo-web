@@ -27,6 +27,10 @@ function init() {
       updateHeight()
     }
   }
+
+  window.onload = () => {
+    window.nativeBridge.send({ type: 'bridgeReady' })
+  }
 }
 
 init()
