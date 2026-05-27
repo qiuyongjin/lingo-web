@@ -1,8 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, ref } from 'vue'
 
 const articleRef = ref<HTMLElement | null>(null)
 const isApplyingHighlight = ref(false)
+
+function handleTouchEnd() {
+  console.log('[select] touchend triggered')
+  // 给浏览器一点时间完成选择
+  setTimeout(() => {
+    console.log('[select] touchend - checking selection after delay')
+    handleSelectionChange()
+  }, 100)
+}
 
 function handleSelectionChange() {
   console.log('[select] selectionchange triggered')
@@ -72,23 +81,6 @@ function handleSelectionChange() {
   isApplyingHighlight.value = false
   console.log('[select] highlight applied successfully')
 }
-
-function handleTouchEnd() {
-  console.log('[select] touchend triggered')
-  // 给浏览器一点时间完成选择
-  setTimeout(() => {
-    console.log('[select] touchend - checking selection after delay')
-    handleSelectionChange()
-  }, 100)
-}
-
-onMounted(() => {
-  document.addEventListener('selectionchange', handleSelectionChange)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('selectionchange', handleSelectionChange)
-})
 
 // 示例文章内容
 const sampleText = `这是一段示例文字，用于测试滑动选择功能。用户可以通过手指在屏幕上滑动来选中这段文字中的任意部分。选中的文字会以高亮方式显示，方便用户标记重要内容。
