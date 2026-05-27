@@ -6,52 +6,63 @@ const isApplyingHighlight = ref(false)
 
 function handleTouchEnd() {
   console.log('[select] touchend triggered')
-  // 给浏览器一点时间完成选择
-  setTimeout(() => {
-    console.log('[select] touchend - checking selection after delay')
-    handleSelectionChange()
-  }, 100)
-}
 
-function handleSelectionChange() {
-  console.log('[select] selectionchange triggered')
-  console.log('[select] isApplyingHighlight:', isApplyingHighlight.value)
+  const selection = window.getSelection()
+  console.log('[select] immediate selection:', selection)
+  console.log('[select] immediate isCollapsed:', selection?.isCollapsed)
 
-  // Avoid recursive calls
-  if (isApplyingHighlight.value) {
-    console.log('[select] skipped - already applying')
+  if (!selection || selection.isCollapsed) {
+    console.log('[select] no valid selection on touchend')
     return
   }
 
-  const selection = window.getSelection()
-  console.log('[select] selection:', selection)
-  console.log('[select] selection.isCollapsed:', selection?.isCollapsed)
-
-  if (!selection || selection.isCollapsed || !articleRef.value) {
-    console.log('[select] skipped - no selection or collapsed')
+  if (!articleRef.value) {
+    console.log('[select] no articleRef')
     return
   }
 
   const range = selection.getRangeAt(0)
-  console.log('[select] range:', range)
-  console.log('[select] range.commonAncestorContainer:', range.commonAncestorContainer)
-  console.log('[select] articleRef.value:', articleRef.value)
+  console.log('[select] immediate range:', range)
 
   if (!articleRef.value.contains(range.commonAncestorContainer)) {
-    console.log('[select] skipped - not in article')
+    console.log('[select] selection not in article')
+    return
+  }
+
+  // 立即保存 range 数据
+  const savedRange = range.cloneRange()
+  console.log('[select] savedRange saved')
+
+  // 延迟应用高亮
+  setTimeout(() => {
+    applyHighlightFromSavedRange(savedRange)
+  }, 100)
+}
+
+function applyHighlightFromSavedRange(savedRange: Range) {
+  console.log('[select] applying highlight from saved range')
+
+  if (isApplyingHighlight.value) {
+    console.log('[select] already applying')
+    return
+  }
+
+  // 重新获取 selection 验证
+  const selection = window.getSelection()
+  if (!selection || selection.isCollapsed) {
+    console.log('[select] selection cleared before apply')
     return
   }
 
   isApplyingHighlight.value = true
-  console.log('[select] applying highlight...')
 
-  // Check if selection is already inside a <mark> element
-  let currentNode: Node | null = range.startContainer
+  // 检查是否已高亮
+  let currentNode: Node | null = savedRange.startContainer
   let checkPath = ['startContainer:']
   while (currentNode) {
     checkPath.push(currentNode.nodeName)
     if (currentNode.nodeName === 'MARK') {
-      console.log('[select] skipped - already marked (startContainer)')
+      console.log('[select] already marked')
       isApplyingHighlight.value = false
       return
     }
@@ -59,13 +70,12 @@ function handleSelectionChange() {
   }
   console.log('[select] startContainer path:', checkPath.join(' -> '))
 
-  // Check endContainer as well
-  currentNode = range.endContainer
+  currentNode = savedRange.endContainer
   checkPath = ['endContainer:']
   while (currentNode) {
     checkPath.push(currentNode.nodeName)
     if (currentNode.nodeName === 'MARK') {
-      console.log('[select] skipped - already marked (endContainer)')
+      console.log('[select] already marked')
       isApplyingHighlight.value = false
       return
     }
@@ -74,8 +84,8 @@ function handleSelectionChange() {
   console.log('[select] endContainer path:', checkPath.join(' -> '))
 
   const mark = document.createElement('mark')
-  mark.appendChild(range.extractContents())
-  range.insertNode(mark)
+  mark.appendChild(savedRange.extractContents())
+  savedRange.insertNode(mark)
   selection.removeAllRanges()
 
   isApplyingHighlight.value = false
