@@ -1,52 +1,44 @@
-<template>
-  <div class="select-page" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
-    <article class="article-content" ref="articleRef">
-      <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph"></p>
-    </article>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const articleRef = ref<HTMLElement | null>(null)
 
 // Touch event state
 const isSelecting = ref(false)
-const startPosition = ref<{ x: number; y: number } | null>(null)
+const startPosition = ref<{ x: number, y: number } | null>(null)
 
-const handleTouchStart = (e: TouchEvent) => {
+function handleTouchStart(e: TouchEvent) {
   isSelecting.value = true
   if (e.touches.length > 0) {
     startPosition.value = {
       x: e.touches[0].clientX,
-      y: e.touches[0].clientY
+      y: e.touches[0].clientY,
     }
   }
 }
 
-const handleTouchMove = (e: TouchEvent) => {
-  if (isSelecting.value && startPosition.value) {
-    // Selection is handled natively by the browser
-    // We just need to track the movement
-  }
+function handleTouchMove(_e: TouchEvent) {
+  // Selection is handled natively by the browser
 }
 
-const handleTouchEnd = () => {
+function handleTouchEnd() {
   isSelecting.value = false
   startPosition.value = null
   applyHighlight()
 }
 
-const applyHighlight = () => {
+function applyHighlight() {
   const selection = window.getSelection()
-  if (!selection || selection.isCollapsed || !articleRef.value) return
+  if (!selection || selection.isCollapsed || !articleRef.value)
+    return
 
   const range = selection.getRangeAt(0)
-  if (!articleRef.value.contains(range.commonAncestorContainer)) return
+  if (!articleRef.value.contains(range.commonAncestorContainer))
+    return
 
   const mark = document.createElement('mark')
-  range.surroundContents(mark)
+  mark.appendChild(range.extractContents())
+  range.insertNode(mark)
   selection.removeAllRanges()
 }
 
@@ -58,9 +50,17 @@ const sampleText = `这是一段示例文字，用于测试滑动选择功能。
 你可以尝试选中这段文字，或者选中其他段落中的部分内容。每一处高亮都会独立保存，可以同时存在多个高亮区域。刷新页面后高亮会消失，因为数据仅保存在内存中。`
 
 const paragraphs = computed(() => {
-  return sampleText.split('\n\n').filter(p => p.trim())
+  return sampleText.split('\n\n')
 })
 </script>
+
+<template>
+  <div class="select-page" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+    <article ref="articleRef" class="article-content">
+      <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
+    </article>
+  </div>
+</template>
 
 <style scoped>
 .select-page {
