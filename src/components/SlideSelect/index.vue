@@ -9,7 +9,8 @@ withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  select: [range: Range | null]
+  selectionEnd: [range: Range | null]
+  click: [word: string, x: number, y: number]
 }>()
 
 const selectionRange = ref<Range | null>(null)
@@ -21,13 +22,57 @@ defineExpose({
   getSelection: () => selectionRange.value,
 })
 
+function getWordRange(node: Node, offset: number): Range | null {
+  const text = node.textContent || ''
+  if (!text)
+    return null
+
+  let start = offset
+  let end = offset
+
+  while (start > 0 && /\w/.test(text[start - 1])) {
+    start--
+  }
+  while (end < text.length && /\w/.test(text[end])) {
+    end++
+  }
+
+  if (start === end)
+    return null
+
+  const range = document.createRange()
+  range.setStart(node, start)
+  range.setEnd(node, end)
+  return range
+}
+
+function getWordAtPoint(x: number, y: number): { word: string, range: Range | null } | null {
+  const pos = document.caretPositionFromPoint(x, y)
+  if (!pos)
+    return null
+
+  const range = getWordRange(pos.offsetNode, pos.offset)
+  if (!range)
+    return null
+
+  return {
+    word: range.toString(),
+    range,
+  }
+}
+
+function handleClick(e: MouseEvent) {
+  const result = getWordAtPoint(e.clientX, e.clientY)
+  if (result) {
+    emit('click', result.word, e.clientX, e.clientY)
+  }
+}
+
 function getRangeFromPoint(x: number, y: number): Range | null {
   const pos = document.caretPositionFromPoint(x, y)
   if (!pos)
     return null
-  const range = document.createRange()
-  range.setStart(pos.offsetNode, pos.offset)
-  return range
+  return getWordRange(pos.offsetNode, pos.offset)
 }
 
 function handleTouchStart(e: TouchEvent) {
@@ -158,19 +203,11 @@ function handleTouchEnd() {
       selection.addRange(selectionRange.value)
     }
   }
+  if (selectionRange.value) {
+    emit('selectionEnd', selectionRange.value)
+  }
   startRange.value = null
   interactionMode.value = 'idle'
-}
-
-function handleSelectionChange() {
-  const selection = window.getSelection()
-  if (!selection || selection.isCollapsed) {
-    return
-  }
-  if (selection.rangeCount > 0) {
-    selectionRange.value = selection.getRangeAt(0)
-    emit('select', selectionRange.value)
-  }
 }
 
 onMounted(() => {
@@ -178,7 +215,7 @@ onMounted(() => {
   document.addEventListener('touchmove', handleTouchMove, { passive: false })
   document.addEventListener('touchend', handleTouchEnd)
   document.addEventListener('touchcancel', handleTouchEnd)
-  document.addEventListener('selectionchange', handleSelectionChange)
+  document.addEventListener('click', handleClick)
 })
 
 onUnmounted(() => {
@@ -186,7 +223,7 @@ onUnmounted(() => {
   document.removeEventListener('touchmove', handleTouchMove)
   document.removeEventListener('touchend', handleTouchEnd)
   document.removeEventListener('touchcancel', handleTouchEnd)
-  document.removeEventListener('selectionchange', handleSelectionChange)
+  document.removeEventListener('click', handleClick)
 })
 </script>
 

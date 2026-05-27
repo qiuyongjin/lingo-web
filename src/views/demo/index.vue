@@ -7,14 +7,18 @@ const paragraphs = [
   'You can try selecting this text, or select part of the content from other paragraphs. Each highlight will be saved independently, and multiple highlight areas can exist at the same time. Highlights will disappear after refreshing the page since data is only stored in memory.',
 ]
 
-function onSelect(range: Range | null) {
+function onSelectionEnd(range: Range | null) {
   if (range) {
     const text = range.toString()
-    console.log(text)
+    console.warn('selection ended:', text)
   }
+}
+
+function onWordClick(word: string) {
+  console.warn(word)
 }
 </script>
 
 <template>
-  <SlideSelect :content="paragraphs" @select="onSelect" />
+  <SlideSelect :content="paragraphs" @selection-end="onSelectionEnd" @click="onWordClick" />
 </template>
