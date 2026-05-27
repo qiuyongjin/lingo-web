@@ -8,6 +8,11 @@ const router = createRouter({
       name: 'read',
       component: () => import('@/views/read/index.vue'),
     },
+    {
+      path: '/select',
+      name: 'select',
+      component: () => import('@/views/select/index.vue'),
+    },
   ],
 })
 
