@@ -36,6 +36,17 @@ function applyHighlight() {
   if (!articleRef.value.contains(range.commonAncestorContainer))
     return
 
+  // Check if selection is already inside a <mark> element
+  let currentNode: Node | null = range.startContainer
+  while (currentNode) {
+    if (currentNode.nodeName === 'MARK') {
+      // Already highlighted, skip
+      selection.removeAllRanges()
+      return
+    }
+    currentNode = currentNode.parentNode
+  }
+
   const mark = document.createElement('mark')
   mark.appendChild(range.extractContents())
   range.insertNode(mark)
