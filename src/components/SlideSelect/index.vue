@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-withDefaults(defineProps<{
-  content: string[]
+const props = withDefaults(defineProps<{
+  content: string
   highlightColor?: string
 }>(), {
   highlightColor: 'rgb(255, 141, 40)',
@@ -12,6 +12,8 @@ const emit = defineEmits<{
   selectionEnd: [range: Range | null]
   click: [word: string, x: number, y: number]
 }>()
+
+const paragraphs = computed(() => props.content.split('\n'))
 
 const selectionRange = ref<Range | null>(null)
 const startRange = ref<Range | null>(null)
@@ -233,7 +235,7 @@ onUnmounted(() => {
 
 <template>
   <div class="slide-select">
-    <p v-for="(paragraph, index) in content" :key="index" v-html="paragraph" />
+    <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
   </div>
 </template>
 
