@@ -17,9 +17,11 @@ const interactionMode = ref<'idle' | 'selecting' | 'scrolling'>('idle')
 const startPos = ref({ x: 0, y: 0 })
 
 function getRangeFromPoint(x: number, y: number): Range | null {
-  if (!document.caretRangeFromPoint)
+  const pos = document.caretPositionFromPoint(x, y)
+  if (!pos)
     return null
-  const range = document.caretRangeFromPoint(x, y)
+  const range = document.createRange()
+  range.setStart(pos.offsetNode, pos.offset)
   return range
 }
 
@@ -206,10 +208,9 @@ onUnmounted(() => {
 
 <style scoped>
 .select-page {
-  padding: 16px;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #fff;
+  color: #c3c3c3;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
@@ -222,6 +223,6 @@ onUnmounted(() => {
 }
 
 .select-page ::selection {
-  background: rgb(255, 200, 0);
+  background: rgb(255, 141, 40);
 }
 </style>
