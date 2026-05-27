@@ -62,6 +62,10 @@ function getWordAtPoint(x: number, y: number): { word: string, range: Range | nu
 }
 
 function handleClick(e: MouseEvent) {
+  if (selectionRange.value && isPointInRange(e.clientX, e.clientY, selectionRange.value)) {
+    return
+  }
+
   const result = getWordAtPoint(e.clientX, e.clientY)
   if (result) {
     emit('click', result.word, e.clientX, e.clientY)
