@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-const sampleText = `这是一段示例文字，用于测试滑动选择功能。用户可以通过手指在屏幕上滑动来选中这段文字中的任意部分。选中的文字会以高亮方式显示，方便用户标记重要内容。
+const sampleText = `This is a sample text for testing the slide selection feature. Users can swipe their fingers on the screen to select any portion of this text. Selected text will be highlighted for easy marking of important content.
 
-这是一个较长的段落，包含了足够多的文字内容，以便在移动设备上进行滑动选择操作。选中后的内容会以黄色背景高亮显示。
+This is a longer paragraph containing enough text content to allow slide selection operations on mobile devices. Selected content will be highlighted with a yellow background.
 
-你可以尝试选中这段文字，或者选中其他段落中的部分内容。每一处高亮都会独立保存，可以同时存在多个高亮区域。刷新页面后高亮会消失，因为数据仅保存在内存中。`
+You can try selecting this text, or select part of the content from other paragraphs. Each highlight will be saved independently, and multiple highlight areas can exist at the same time. Highlights will disappear after refreshing the page since data is only stored in memory.`
 
 const paragraphs = computed(() => {
   return sampleText.split('\n\n')
