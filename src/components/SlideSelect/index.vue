@@ -1,0 +1,218 @@
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
+
+withDefaults(defineProps<{
+  content: string[]
+  highlightColor?: string
+}>(), {
+  highlightColor: 'rgb(255, 141, 40)',
+})
+
+const emit = defineEmits<{
+  select: [range: Range | null]
+}>()
+
+const selectionRange = ref<Range | null>(null)
+const startRange = ref<Range | null>(null)
+const interactionMode = ref<'idle' | 'selecting' | 'scrolling'>('idle')
+const startPos = ref({ x: 0, y: 0 })
+
+defineExpose({
+  getSelection: () => selectionRange.value,
+})
+
+function getRangeFromPoint(x: number, y: number): Range | null {
+  const pos = document.caretPositionFromPoint(x, y)
+  if (!pos)
+    return null
+  const range = document.createRange()
+  range.setStart(pos.offsetNode, pos.offset)
+  return range
+}
+
+function handleTouchStart(e: TouchEvent) {
+  if (e.touches.length !== 1)
+    return
+  const touch = e.touches[0]
+
+  startPos.value = { x: touch.clientX, y: touch.clientY }
+  interactionMode.value = 'idle'
+
+  const selection = window.getSelection()
+  if (!selection)
+    return
+
+  if (!selection.isCollapsed && selectionRange.value) {
+    const range = selectionRange.value
+    const isInsideRange = isPointInRange(touch.clientX, touch.clientY, range)
+    if (isInsideRange) {
+      startRange.value = null
+    }
+  }
+}
+
+function isPointInRange(x: number, y: number, range: Range): boolean {
+  const rects = range.getClientRects()
+  if (rects.length === 0)
+    return false
+
+  const padding = 10
+  for (let i = 0; i < rects.length; i++) {
+    const rect = rects[i]
+    if (
+      x >= rect.left - padding
+      && x <= rect.right + padding
+      && y >= rect.top - padding
+      && y <= rect.bottom + padding
+    ) {
+      return true
+    }
+  }
+  return false
+}
+
+function handleTouchMove(e: TouchEvent) {
+  if (e.touches.length !== 1)
+    return
+
+  const touch = e.touches[0]
+  const deltaX = touch.clientX - startPos.value.x
+  const deltaY = touch.clientY - startPos.value.y
+
+  if (interactionMode.value === 'idle') {
+    const range = getRangeFromPoint(startPos.value.x, startPos.value.y)
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      interactionMode.value = 'selecting'
+      if (range) {
+        startRange.value = range
+        selectionRange.value = range
+        const selection = window.getSelection()
+        if (selection) {
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      }
+    }
+    else {
+      interactionMode.value = 'scrolling'
+      startRange.value = null
+      return
+    }
+  }
+
+  if (interactionMode.value === 'scrolling') {
+    return
+  }
+
+  if (interactionMode.value === 'selecting') {
+    if (Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
+      interactionMode.value = 'scrolling'
+      startRange.value = null
+      return
+    }
+
+    if (!startRange.value)
+      return
+    e.preventDefault()
+
+    const range = getRangeFromPoint(touch.clientX, touch.clientY)
+    if (!range)
+      return
+
+    const selection = window.getSelection()
+    if (!selection)
+      return
+
+    selection.removeAllRanges()
+
+    const newRange = document.createRange()
+    const startContainer = startRange.value.startContainer
+    const startOffset = startRange.value.startOffset
+    const endContainer = range.endContainer
+    const endOffset = range.endOffset
+
+    const isSameContainer = startContainer === endContainer
+    const isForward = isSameContainer
+      ? startOffset <= endOffset
+      : Boolean(startContainer.compareDocumentPosition(endContainer) & Node.DOCUMENT_POSITION_FOLLOWING)
+
+    if (isForward) {
+      newRange.setStart(startContainer, startOffset)
+      newRange.setEnd(endContainer, endOffset)
+    }
+    else {
+      newRange.setStart(endContainer, endOffset)
+      newRange.setEnd(startContainer, startOffset)
+    }
+
+    selection.addRange(newRange)
+    selectionRange.value = newRange
+  }
+}
+
+function handleTouchEnd() {
+  if (interactionMode.value === 'scrolling' && selectionRange.value) {
+    const selection = window.getSelection()
+    if (selection && selection.isCollapsed) {
+      selection.removeAllRanges()
+      selection.addRange(selectionRange.value)
+    }
+  }
+  startRange.value = null
+  interactionMode.value = 'idle'
+}
+
+function handleSelectionChange() {
+  const selection = window.getSelection()
+  if (!selection || selection.isCollapsed) {
+    return
+  }
+  if (selection.rangeCount > 0) {
+    selectionRange.value = selection.getRangeAt(0)
+    emit('select', selectionRange.value)
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('touchstart', handleTouchStart, { passive: true })
+  document.addEventListener('touchmove', handleTouchMove, { passive: false })
+  document.addEventListener('touchend', handleTouchEnd)
+  document.addEventListener('touchcancel', handleTouchEnd)
+  document.addEventListener('selectionchange', handleSelectionChange)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('touchstart', handleTouchStart)
+  document.removeEventListener('touchmove', handleTouchMove)
+  document.removeEventListener('touchend', handleTouchEnd)
+  document.removeEventListener('touchcancel', handleTouchEnd)
+  document.removeEventListener('selectionchange', handleSelectionChange)
+})
+</script>
+
+<template>
+  <div class="slide-select">
+    <p v-for="(paragraph, index) in content" :key="index" v-html="paragraph" />
+  </div>
+</template>
+
+<style scoped>
+.slide-select {
+  min-height: 100vh;
+  box-sizing: border-box;
+  color: #c3c3c3;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+  font-size: 30px;
+  line-height: 1.6;
+}
+
+.slide-select p {
+  margin: 30px 0;
+}
+
+.slide-select ::selection {
+  background: v-bind(highlightColor);
+}
+</style>

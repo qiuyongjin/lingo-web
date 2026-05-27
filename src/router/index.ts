@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'select',
       component: () => import('@/views/select/index.vue'),
     },
+    {
+      path: '/demo',
+      name: 'demo',
+      component: () => import('@/views/demo/index.vue'),
+    },
   ],
 })
 
