@@ -13,6 +13,8 @@ const paragraphs = computed(() => {
 
 const selectionRange = ref<Range | null>(null)
 const startRange = ref<Range | null>(null)
+const interactionMode = ref<'idle' | 'selecting' | 'scrolling'>('idle')
+const startPos = ref({ x: 0, y: 0 })
 
 function getRangeFromPoint(x: number, y: number): Range | null {
   if (!document.caretRangeFromPoint)
@@ -25,6 +27,9 @@ function handleTouchStart(e: TouchEvent) {
   if (e.touches.length !== 1)
     return
   const touch = e.touches[0]
+
+  startPos.value = { x: touch.clientX, y: touch.clientY }
+  interactionMode.value = 'idle'
 
   const selection = window.getSelection()
   if (!selection)
@@ -75,51 +80,87 @@ function isPointInRange(x: number, y: number, range: Range): boolean {
 }
 
 function handleTouchMove(e: TouchEvent) {
-  if (e.touches.length !== 1 || !startRange.value)
+  if (e.touches.length !== 1)
     return
-  e.preventDefault()
 
   const touch = e.touches[0]
-  const range = getRangeFromPoint(touch.clientX, touch.clientY)
-  if (!range)
-    return
+  const deltaX = touch.clientX - startPos.value.x
+  const deltaY = touch.clientY - startPos.value.y
 
-  const selection = window.getSelection()
-  if (!selection)
-    return
-
-  selection.removeAllRanges()
-
-  const newRange = document.createRange()
-  const startContainer = startRange.value.startContainer
-  const startOffset = startRange.value.startOffset
-  const endContainer = range.endContainer
-  const endOffset = range.endOffset
-
-  // 确保起点在终点之前
-  if (
-    startContainer === endContainer && startOffset <= endOffset
-    || startContainer !== endContainer
-    && (startContainer.compareDocumentPosition(endContainer) & Node.DOCUMENT_POSITION_FOLLOWING)
-  ) {
-    newRange.setStart(startContainer, startOffset)
-    newRange.setEnd(endContainer, endOffset)
-  }
-  else {
-    newRange.setStart(endContainer, endOffset)
-    newRange.setEnd(startContainer, startOffset)
+  // 首次移动时判断方向
+  if (interactionMode.value === 'idle') {
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // 水平滑动，进入选择模式
+      interactionMode.value = 'selecting'
+    }
+    else {
+      // 垂直滑动，进入滚动模式，不拦截
+      interactionMode.value = 'scrolling'
+      startRange.value = null
+      return
+    }
   }
 
-  selection.addRange(newRange)
-  selectionRange.value = newRange
+  // 滚动模式：不拦截，让页面自然滚动
+  if (interactionMode.value === 'scrolling') {
+    return
+  }
+
+  // 选择模式
+  if (interactionMode.value === 'selecting') {
+    // 如果移动方向变为垂直，切换到滚动模式（保留选区）
+    if (Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
+      interactionMode.value = 'scrolling'
+      startRange.value = null
+      return
+    }
+
+    if (!startRange.value)
+      return
+    e.preventDefault()
+
+    const range = getRangeFromPoint(touch.clientX, touch.clientY)
+    if (!range)
+      return
+
+    const selection = window.getSelection()
+    if (!selection)
+      return
+
+    selection.removeAllRanges()
+
+    const newRange = document.createRange()
+    const startContainer = startRange.value.startContainer
+    const startOffset = startRange.value.startOffset
+    const endContainer = range.endContainer
+    const endOffset = range.endOffset
+
+    // 确保起点在终点之前
+    const isSameContainer = startContainer === endContainer
+    const isForward = isSameContainer
+      ? startOffset <= endOffset
+      : Boolean(startContainer.compareDocumentPosition(endContainer) & Node.DOCUMENT_POSITION_FOLLOWING)
+
+    if (isForward) {
+      newRange.setStart(startContainer, startOffset)
+      newRange.setEnd(endContainer, endOffset)
+    }
+    else {
+      newRange.setStart(endContainer, endOffset)
+      newRange.setEnd(startContainer, startOffset)
+    }
+
+    selection.addRange(newRange)
+    selectionRange.value = newRange
+  }
 }
 
 function handleTouchEnd() {
   startRange.value = null
+  interactionMode.value = 'idle'
 }
 
 function handleSelectionChange() {
-  console.log('[select] selectionchange', window.getSelection()?.toString())
   const selection = window.getSelection()
   if (!selection || selection.isCollapsed)
     return
@@ -160,12 +201,12 @@ onUnmounted(() => {
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
-  font-size: 20px;
-  line-height: 1.8;
+  font-size: 30px;
+  line-height: 1.6;
 }
 
 .select-page p {
-  margin: 12px 0;
+  margin: 30px 0;
 }
 
 .select-page ::selection {
