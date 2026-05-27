@@ -1,53 +1,77 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const articleRef = ref<HTMLElement | null>(null)
 const isApplyingHighlight = ref(false)
+const isTouching = ref(false)
+let savedSelection: Selection | null = null
+
+function handleTouchStart() {
+  console.log('[select] touchstart')
+  isTouching.value = true
+  savedSelection = null
+
+  // 监听 selectionchange 来捕获选择
+  document.addEventListener('selectionchange', handleSelectionChangeOnTouch)
+}
+
+function handleSelectionChangeOnTouch() {
+  if (!isTouching.value) return
+
+  const selection = window.getSelection()
+  console.log('[select] selectionchange during touch:', selection)
+  console.log('[select] isCollapsed:', selection?.isCollapsed)
+
+  if (selection && !selection.isCollapsed) {
+    savedSelection = selection
+    console.log('[select] selection saved during touch')
+  }
+}
 
 function handleTouchEnd() {
-  console.log('[select] touchend triggered')
+  console.log('[select] touchend')
+  isTouching.value = false
 
-  // 使用更长的延迟，让 iOS Safari 有足够时间完成选择
+  document.removeEventListener('selectionchange', handleSelectionChangeOnTouch)
+
+  // 延迟检查选择
   setTimeout(() => {
-    console.log('[select] delayed check after 500ms')
+    console.log('[select] delayed check')
 
     const selection = window.getSelection()
-    console.log('[select] selection:', selection)
-    console.log('[select] anchorNode:', selection?.anchorNode)
-    console.log('[select] focusNode:', selection?.focusNode)
+    console.log('[select] selection after touch:', selection)
     console.log('[select] isCollapsed:', selection?.isCollapsed)
 
-    if (!selection || selection.isCollapsed) {
-      console.log('[select] no valid selection')
-      return
+    // 使用 touch 期间保存的选择
+    if (savedSelection) {
+      console.log('[select] using saved selection')
+      console.log('[select] saved anchorNode:', savedSelection.anchorNode)
+      console.log('[select] saved focusNode:', savedSelection.focusNode)
+
+      if (!articleRef.value) return
+
+      const range = savedSelection.getRangeAt(0)
+      console.log('[select] saved range:', range)
+
+      if (articleRef.value.contains(range.commonAncestorContainer)) {
+        const savedRange = range.cloneRange()
+        applyHighlight(savedRange)
+      }
+
+      savedSelection = null
+    } else if (selection && !selection.isCollapsed) {
+      // 回退：尝试当前选择
+      console.log('[select] falling back to current selection')
+      if (!articleRef.value) return
+
+      const range = selection.getRangeAt(0)
+      if (articleRef.value.contains(range.commonAncestorContainer)) {
+        applyHighlight(range.cloneRange())
+      }
+    } else {
+      console.log('[select] no selection available')
     }
-
-    if (!articleRef.value) {
-      console.log('[select] no articleRef')
-      return
-    }
-
-    if (selection.rangeCount === 0) {
-      console.log('[select] no ranges')
-      return
-    }
-
-    const range = selection.getRangeAt(0)
-    console.log('[select] range:', range)
-    console.log('[select] range.commonAncestorContainer:', range.commonAncestorContainer)
-
-    if (!articleRef.value.contains(range.commonAncestorContainer)) {
-      console.log('[select] selection not in article')
-      return
-    }
-
-    // 保存 range
-    const savedRange = range.cloneRange()
-    console.log('[select] range saved, applying highlight')
-
-    // 应用高亮
-    applyHighlight(savedRange)
-  }, 500)
+  }, 300)
 }
 
 function applyHighlight(savedRange: Range) {
@@ -98,6 +122,17 @@ function applyHighlight(savedRange: Range) {
   console.log('[select] highlight applied successfully')
 }
 
+onMounted(() => {
+  document.addEventListener('touchstart', handleTouchStart, { passive: true })
+  document.addEventListener('touchend', handleTouchEnd, { passive: true })
+})
+
+onUnmounted(() => {
+  document.removeEventListener('touchstart', handleTouchStart)
+  document.removeEventListener('touchend', handleTouchEnd)
+  document.removeEventListener('selectionchange', handleSelectionChangeOnTouch)
+})
+
 // 示例文章内容
 const sampleText = `这是一段示例文字，用于测试滑动选择功能。用户可以通过手指在屏幕上滑动来选中这段文字中的任意部分。选中的文字会以高亮方式显示，方便用户标记重要内容。
 
@@ -111,7 +146,7 @@ const paragraphs = computed(() => {
 </script>
 
 <template>
-  <div class="select-page" @touchend="handleTouchEnd">
+  <div class="select-page">
     <article ref="articleRef" class="article-content">
       <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
     </article>
