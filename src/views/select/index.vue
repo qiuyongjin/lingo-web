@@ -160,6 +160,12 @@ onUnmounted(() => {
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
+  font-size: 20px;
+  line-height: 1.8;
+}
+
+.select-page p {
+  margin: 12px 0;
 }
 
 .select-page ::selection {
