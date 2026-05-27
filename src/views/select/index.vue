@@ -5,39 +5,64 @@ const articleRef = ref<HTMLElement | null>(null)
 const isApplyingHighlight = ref(false)
 
 function handleSelectionChange() {
+  console.log('[select] selectionchange triggered')
+  console.log('[select] isApplyingHighlight:', isApplyingHighlight.value)
+
   // Avoid recursive calls
-  if (isApplyingHighlight.value)
+  if (isApplyingHighlight.value) {
+    console.log('[select] skipped - already applying')
     return
+  }
 
   const selection = window.getSelection()
-  if (!selection || selection.isCollapsed || !articleRef.value)
+  console.log('[select] selection:', selection)
+  console.log('[select] selection.isCollapsed:', selection?.isCollapsed)
+
+  if (!selection || selection.isCollapsed || !articleRef.value) {
+    console.log('[select] skipped - no selection or collapsed')
     return
+  }
 
   const range = selection.getRangeAt(0)
-  if (!articleRef.value.contains(range.commonAncestorContainer))
+  console.log('[select] range:', range)
+  console.log('[select] range.commonAncestorContainer:', range.commonAncestorContainer)
+  console.log('[select] articleRef.value:', articleRef.value)
+
+  if (!articleRef.value.contains(range.commonAncestorContainer)) {
+    console.log('[select] skipped - not in article')
     return
+  }
 
   isApplyingHighlight.value = true
+  console.log('[select] applying highlight...')
 
   // Check if selection is already inside a <mark> element
   let currentNode: Node | null = range.startContainer
+  let checkPath = ['startContainer:']
   while (currentNode) {
+    checkPath.push(currentNode.nodeName)
     if (currentNode.nodeName === 'MARK') {
+      console.log('[select] skipped - already marked (startContainer)')
       isApplyingHighlight.value = false
       return
     }
     currentNode = currentNode.parentNode
   }
+  console.log('[select] startContainer path:', checkPath.join(' -> '))
 
   // Check endContainer as well
   currentNode = range.endContainer
+  checkPath = ['endContainer:']
   while (currentNode) {
+    checkPath.push(currentNode.nodeName)
     if (currentNode.nodeName === 'MARK') {
+      console.log('[select] skipped - already marked (endContainer)')
       isApplyingHighlight.value = false
       return
     }
     currentNode = currentNode.parentNode
   }
+  console.log('[select] endContainer path:', checkPath.join(' -> '))
 
   const mark = document.createElement('mark')
   mark.appendChild(range.extractContents())
@@ -45,6 +70,7 @@ function handleSelectionChange() {
   selection.removeAllRanges()
 
   isApplyingHighlight.value = false
+  console.log('[select] highlight applied successfully')
 }
 
 onMounted(() => {
