@@ -7,50 +7,52 @@ const isApplyingHighlight = ref(false)
 function handleTouchEnd() {
   console.log('[select] touchend triggered')
 
-  const selection = window.getSelection()
-  console.log('[select] immediate selection:', selection)
-  console.log('[select] immediate isCollapsed:', selection?.isCollapsed)
-
-  if (!selection || selection.isCollapsed) {
-    console.log('[select] no valid selection on touchend')
-    return
-  }
-
-  if (!articleRef.value) {
-    console.log('[select] no articleRef')
-    return
-  }
-
-  const range = selection.getRangeAt(0)
-  console.log('[select] immediate range:', range)
-
-  if (!articleRef.value.contains(range.commonAncestorContainer)) {
-    console.log('[select] selection not in article')
-    return
-  }
-
-  // 立即保存 range 数据
-  const savedRange = range.cloneRange()
-  console.log('[select] savedRange saved')
-
-  // 延迟应用高亮
+  // 使用更长的延迟，让 iOS Safari 有足够时间完成选择
   setTimeout(() => {
-    applyHighlightFromSavedRange(savedRange)
-  }, 100)
+    console.log('[select] delayed check after 500ms')
+
+    const selection = window.getSelection()
+    console.log('[select] selection:', selection)
+    console.log('[select] anchorNode:', selection?.anchorNode)
+    console.log('[select] focusNode:', selection?.focusNode)
+    console.log('[select] isCollapsed:', selection?.isCollapsed)
+
+    if (!selection || selection.isCollapsed) {
+      console.log('[select] no valid selection')
+      return
+    }
+
+    if (!articleRef.value) {
+      console.log('[select] no articleRef')
+      return
+    }
+
+    if (selection.rangeCount === 0) {
+      console.log('[select] no ranges')
+      return
+    }
+
+    const range = selection.getRangeAt(0)
+    console.log('[select] range:', range)
+    console.log('[select] range.commonAncestorContainer:', range.commonAncestorContainer)
+
+    if (!articleRef.value.contains(range.commonAncestorContainer)) {
+      console.log('[select] selection not in article')
+      return
+    }
+
+    // 保存 range
+    const savedRange = range.cloneRange()
+    console.log('[select] range saved, applying highlight')
+
+    // 应用高亮
+    applyHighlight(savedRange)
+  }, 500)
 }
 
-function applyHighlightFromSavedRange(savedRange: Range) {
-  console.log('[select] applying highlight from saved range')
-
+function applyHighlight(savedRange: Range) {
   if (isApplyingHighlight.value) {
     console.log('[select] already applying')
-    return
-  }
-
-  // 重新获取 selection 验证
-  const selection = window.getSelection()
-  if (!selection || selection.isCollapsed) {
-    console.log('[select] selection cleared before apply')
     return
   }
 
@@ -86,7 +88,11 @@ function applyHighlightFromSavedRange(savedRange: Range) {
   const mark = document.createElement('mark')
   mark.appendChild(savedRange.extractContents())
   savedRange.insertNode(mark)
-  selection.removeAllRanges()
+
+  const selection = window.getSelection()
+  if (selection) {
+    selection.removeAllRanges()
+  }
 
   isApplyingHighlight.value = false
   console.log('[select] highlight applied successfully')
