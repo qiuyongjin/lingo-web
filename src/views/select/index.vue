@@ -3,36 +3,50 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const articleRef = ref<HTMLElement | null>(null)
 const isApplyingHighlight = ref(false)
-const isTouching = ref(false)
 let savedRange: Range | null = null
+let touchStartX = 0
+let touchStartY = 0
 
-function handleTouchStart() {
+function handleTouchStart(e: TouchEvent) {
   console.log('[select] touchstart')
-  isTouching.value = true
   savedRange = null
+
+  if (e.touches.length > 0) {
+    touchStartX = e.touches[0].clientX
+    touchStartY = e.touches[0].clientY
+    console.log('[select] touch start position:', touchStartX, touchStartY)
+  }
+}
+
+function handleTouchMove(e: TouchEvent) {
+  // 实时跟踪选择
+  const selection = window.getSelection()
+  if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
+    const range = selection.getRangeAt(0)
+    console.log('[select] touchmove selection:', range.startOffset, '->', range.endOffset)
+    if (articleRef.value?.contains(range.commonAncestorContainer)) {
+      savedRange = range.cloneRange()
+      console.log('[select] saved range during touchmove')
+    }
+  }
 }
 
 function handleTouchEnd(e: TouchEvent) {
   console.log('[select] touchend')
-  isTouching.value = false
+  console.log('[select] savedRange before apply:', savedRange)
 
-  // 尝试立即获取选择
-  const selection = window.getSelection()
-  console.log('[select] immediate selection:', selection)
-  console.log('[select] immediate anchorNode:', selection?.anchorNode)
-
-  // 如果立即获取不到，尝试用 caretRangeFromPoint
-  if ((!selection || selection.isCollapsed) && e.changedTouches.length > 0) {
-    console.log('[select] trying caretRangeFromPoint')
+  // 如果没有在 touchmove 中获取到，尝试用 rangeFromPoint
+  if (!savedRange && e.changedTouches.length > 0) {
     const touch = e.changedTouches[0]
+    console.log('[select] touch end position:', touch.clientX, touch.clientY)
+
+    // 使用 document.caretRangeFromPoint 获取点击位置
     try {
       const range = document.caretRangeFromPoint(touch.clientX, touch.clientY)
       if (range) {
-        console.log('[select] caretRangeFromPoint found range:', range)
-        console.log('[select] range.startContainer:', range.startContainer)
-        console.log('[select] range.endContainer:', range.endContainer)
-
-        if (articleRef.value?.contains(range.commonAncestorContainer)) {
+        console.log('[select] range from point:', range.startOffset, '->', range.endOffset)
+        console.log('[select] range collapsed:', range.collapsed)
+        if (!range.collapsed && articleRef.value?.contains(range.commonAncestorContainer)) {
           savedRange = range.cloneRange()
           console.log('[select] saved range from caretRangeFromPoint')
         }
@@ -42,49 +56,27 @@ function handleTouchEnd(e: TouchEvent) {
     }
   }
 
-  // 如果还是获取不到，延迟重试
-  if (!savedRange) {
-    console.log('[select] no range yet, will retry')
-    let attempts = 0
-    const maxAttempts = 10
-
-    const tryGetSelection = () => {
-      attempts++
-      const sel = window.getSelection()
-      console.log(`[select] retry ${attempts}:`, sel, sel?.isCollapsed)
-
-      if (sel && !sel.isCollapsed && sel.rangeCount > 0) {
-        const r = sel.getRangeAt(0)
-        if (articleRef.value?.contains(r.commonAncestorContainer)) {
-          savedRange = r.cloneRange()
-          console.log('[select] got selection on retry')
-          return
-        }
-      }
-
-      if (attempts < maxAttempts) {
-        setTimeout(tryGetSelection, 50)
-      } else {
-        console.log('[select] giving up after 10 attempts')
-      }
-    }
-
-    setTimeout(tryGetSelection, 50)
-  }
-
-  // 最终应用
+  // 延迟应用
   setTimeout(() => {
-    console.log('[select] final apply, savedRange:', savedRange)
+    console.log('[select] applying, savedRange:', savedRange)
     if (savedRange) {
       applyHighlight(savedRange)
+    } else {
+      console.log('[select] no range to apply')
     }
-  }, 500)
+  }, 100)
 }
 
 function applyHighlight(rangeToApply: Range) {
-  if (isApplyingHighlight.value) return
+  if (isApplyingHighlight.value) {
+    console.log('[select] already applying')
+    return
+  }
 
-  if (!articleRef.value) return
+  if (!articleRef.value) {
+    console.log('[select] no articleRef')
+    return
+  }
 
   // 检查是否已高亮
   let currentNode: Node | null = rangeToApply.startContainer
@@ -107,9 +99,20 @@ function applyHighlight(rangeToApply: Range) {
 
   isApplyingHighlight.value = true
 
+  console.log('[select] extracting contents, start:', rangeToApply.startOffset, 'end:', rangeToApply.endOffset)
+  console.log('[select] startContainer text:', rangeToApply.startContainer.textContent?.substring(0, 20))
+  console.log('[select] endContainer text:', rangeToApply.endContainer.textContent?.substring(0, 20))
+  console.log('[select] same container:', rangeToApply.startContainer === rangeToApply.endContainer)
+
   const mark = document.createElement('mark')
-  mark.appendChild(rangeToApply.extractContents())
+  const extracted = rangeToApply.extractContents()
+  console.log('[select] extracted content:', extracted.textContent?.substring(0, 50))
+  console.log('[select] extracted children count:', extracted.childNodes.length)
+
+  mark.appendChild(extracted)
   rangeToApply.insertNode(mark)
+
+  console.log('[select] mark inserted, mark content:', mark.textContent?.substring(0, 50))
 
   const selection = window.getSelection()
   if (selection) {
@@ -122,11 +125,13 @@ function applyHighlight(rangeToApply: Range) {
 
 onMounted(() => {
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
+  document.addEventListener('touchmove', handleTouchMove, { passive: true })
   document.addEventListener('touchend', handleTouchEnd)
 })
 
 onUnmounted(() => {
   document.removeEventListener('touchstart', handleTouchStart)
+  document.removeEventListener('touchmove', handleTouchMove)
   document.removeEventListener('touchend', handleTouchEnd)
 })
 
