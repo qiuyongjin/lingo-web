@@ -73,6 +73,15 @@ function handleSelectionChange() {
   console.log('[select] highlight applied successfully')
 }
 
+function handleTouchEnd() {
+  console.log('[select] touchend triggered')
+  // 给浏览器一点时间完成选择
+  setTimeout(() => {
+    console.log('[select] touchend - checking selection after delay')
+    handleSelectionChange()
+  }, 100)
+}
+
 onMounted(() => {
   document.addEventListener('selectionchange', handleSelectionChange)
 })
@@ -94,7 +103,7 @@ const paragraphs = computed(() => {
 </script>
 
 <template>
-  <div class="select-page">
+  <div class="select-page" @touchend="handleTouchEnd">
     <article ref="articleRef" class="article-content">
       <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
     </article>
