@@ -47,6 +47,17 @@ function applyHighlight() {
     currentNode = currentNode.parentNode
   }
 
+  // Check endContainer as well
+  currentNode = range.endContainer
+  while (currentNode) {
+    if (currentNode.nodeName === 'MARK') {
+      // Already highlighted, skip
+      selection.removeAllRanges()
+      return
+    }
+    currentNode = currentNode.parentNode
+  }
+
   const mark = document.createElement('mark')
   mark.appendChild(range.extractContents())
   range.insertNode(mark)
