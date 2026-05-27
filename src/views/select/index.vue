@@ -1,36 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const articleRef = ref<HTMLElement | null>(null)
+const isApplyingHighlight = ref(false)
 
-// Touch event state
-const isSelecting = ref(false)
-const startPosition = ref<{ x: number, y: number } | null>(null)
+function handleSelectionChange() {
+  // Avoid recursive calls
+  if (isApplyingHighlight.value)
+    return
 
-function handleTouchStart(e: TouchEvent) {
-  isSelecting.value = true
-  if (e.touches.length > 0) {
-    startPosition.value = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-    }
-  }
-}
-
-function handleTouchMove(_e: TouchEvent) {
-  // Selection is handled natively by the browser
-}
-
-function handleTouchEnd() {
-  isSelecting.value = false
-  startPosition.value = null
-  // Delay to allow browser to finalize selection after touchend
-  requestAnimationFrame(() => {
-    applyHighlight()
-  })
-}
-
-function applyHighlight() {
   const selection = window.getSelection()
   if (!selection || selection.isCollapsed || !articleRef.value)
     return
@@ -39,12 +17,13 @@ function applyHighlight() {
   if (!articleRef.value.contains(range.commonAncestorContainer))
     return
 
+  isApplyingHighlight.value = true
+
   // Check if selection is already inside a <mark> element
   let currentNode: Node | null = range.startContainer
   while (currentNode) {
     if (currentNode.nodeName === 'MARK') {
-      // Already highlighted, skip
-      selection.removeAllRanges()
+      isApplyingHighlight.value = false
       return
     }
     currentNode = currentNode.parentNode
@@ -54,8 +33,7 @@ function applyHighlight() {
   currentNode = range.endContainer
   while (currentNode) {
     if (currentNode.nodeName === 'MARK') {
-      // Already highlighted, skip
-      selection.removeAllRanges()
+      isApplyingHighlight.value = false
       return
     }
     currentNode = currentNode.parentNode
@@ -65,7 +43,17 @@ function applyHighlight() {
   mark.appendChild(range.extractContents())
   range.insertNode(mark)
   selection.removeAllRanges()
+
+  isApplyingHighlight.value = false
 }
+
+onMounted(() => {
+  document.addEventListener('selectionchange', handleSelectionChange)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('selectionchange', handleSelectionChange)
+})
 
 // 示例文章内容
 const sampleText = `这是一段示例文字，用于测试滑动选择功能。用户可以通过手指在屏幕上滑动来选中这段文字中的任意部分。选中的文字会以高亮方式显示，方便用户标记重要内容。
@@ -80,7 +68,7 @@ const paragraphs = computed(() => {
 </script>
 
 <template>
-  <div class="select-page" @touchstart="handleTouchStart" @touchmove="handleTouchMove" @touchend="handleTouchEnd">
+  <div class="select-page">
     <article ref="articleRef" class="article-content">
       <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
     </article>
