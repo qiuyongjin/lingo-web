@@ -241,7 +241,6 @@ onUnmounted(() => {
 
 <style scoped>
 .slide-select {
-  min-height: 100vh;
   box-sizing: border-box;
   color: #c3c3c3;
   user-select: text;
