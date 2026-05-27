@@ -43,20 +43,11 @@ function handleTouchStart(e: TouchEvent) {
     if (isInsideRange) {
       // 点击在选区内，不重置，让浏览器处理
       startRange.value = null
-      return
     }
   }
 
-  // 点击在选区外，开始新的选择
-  const range = getRangeFromPoint(touch.clientX, touch.clientY)
-  if (!range)
-    return
-
-  startRange.value = range
-  selectionRange.value = range
-
-  selection.removeAllRanges()
-  selection.addRange(range)
+  // 点击在选区外：只记录位置，等待 touchmove 判断方向
+  // 不立即创建选择，让首次 move 时再决定是选择还是滚动
 }
 
 function isPointInRange(x: number, y: number, range: Range): boolean {
@@ -89,12 +80,22 @@ function handleTouchMove(e: TouchEvent) {
 
   // 首次移动时判断方向
   if (interactionMode.value === 'idle') {
+    const range = getRangeFromPoint(startPos.value.x, startPos.value.y)
     if (Math.abs(deltaX) > Math.abs(deltaY)) {
       // 水平滑动，进入选择模式
       interactionMode.value = 'selecting'
+      if (range) {
+        startRange.value = range
+        selectionRange.value = range
+        const selection = window.getSelection()
+        if (selection) {
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      }
     }
     else {
-      // 垂直滑动，进入滚动模式，不拦截
+      // 垂直滑动，进入滚动模式，保留已有选区
       interactionMode.value = 'scrolling'
       startRange.value = null
       return
@@ -156,14 +157,25 @@ function handleTouchMove(e: TouchEvent) {
 }
 
 function handleTouchEnd() {
+  // 滚动结束后，如果有保存的选区但 DOM selection 已消失，恢复选区
+  if (interactionMode.value === 'scrolling' && selectionRange.value) {
+    const selection = window.getSelection()
+    if (selection && selection.isCollapsed) {
+      selection.removeAllRanges()
+      selection.addRange(selectionRange.value)
+    }
+  }
   startRange.value = null
   interactionMode.value = 'idle'
 }
 
 function handleSelectionChange() {
   const selection = window.getSelection()
-  if (!selection || selection.isCollapsed)
+  if (!selection || selection.isCollapsed) {
+    // DOM selection 被清除（可能是滚动导致）
+    // 如果我们有保存的 selectionRange 且当前是滚动模式，保留它等待恢复
     return
+  }
   if (selection.rangeCount > 0) {
     selectionRange.value = selection.getRangeAt(0)
   }
