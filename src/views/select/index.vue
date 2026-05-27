@@ -24,7 +24,10 @@ function handleTouchMove(_e: TouchEvent) {
 function handleTouchEnd() {
   isSelecting.value = false
   startPosition.value = null
-  applyHighlight()
+  // Delay to allow browser to finalize selection after touchend
+  requestAnimationFrame(() => {
+    applyHighlight()
+  })
 }
 
 function applyHighlight() {
