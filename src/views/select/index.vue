@@ -4,30 +4,15 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 const articleRef = ref<HTMLElement | null>(null)
 const isApplyingHighlight = ref(false)
 let savedRange: Range | null = null
-let touchStartX = 0
-let touchStartY = 0
 
-function handleTouchStart(e: TouchEvent) {
-  console.log('[select] touchstart')
-  savedRange = null
-
-  if (e.touches.length > 0) {
-    touchStartX = e.touches[0].clientX
-    touchStartY = e.touches[0].clientY
-    console.log('[select] touch start position:', touchStartX, touchStartY)
-  }
-}
-
-function handleTouchMove(e: TouchEvent) {
-  // 实时跟踪选择
+function handleSelectionChange() {
   const selection = window.getSelection()
-  if (selection && !selection.isCollapsed && selection.rangeCount > 0) {
-    const range = selection.getRangeAt(0)
-    console.log('[select] touchmove selection:', range.startOffset, '->', range.endOffset)
-    if (articleRef.value?.contains(range.commonAncestorContainer)) {
-      savedRange = range.cloneRange()
-      console.log('[select] saved range during touchmove')
-    }
+  if (!selection || selection.isCollapsed || selection.rangeCount === 0) return
+
+  const range = selection.getRangeAt(0)
+  if (articleRef.value?.contains(range.commonAncestorContainer)) {
+    savedRange = range.cloneRange()
+    console.log('[select] selection changed, saved:', range.startOffset, '->', range.endOffset)
   }
 }
 
@@ -124,14 +109,12 @@ function applyHighlight(rangeToApply: Range) {
 }
 
 onMounted(() => {
-  document.addEventListener('touchstart', handleTouchStart, { passive: true })
-  document.addEventListener('touchmove', handleTouchMove, { passive: true })
+  document.addEventListener('selectionchange', handleSelectionChange)
   document.addEventListener('touchend', handleTouchEnd)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('touchstart', handleTouchStart)
-  document.removeEventListener('touchmove', handleTouchMove)
+  document.removeEventListener('selectionchange', handleSelectionChange)
   document.removeEventListener('touchend', handleTouchEnd)
 })
 
