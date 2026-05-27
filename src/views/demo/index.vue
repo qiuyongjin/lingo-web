@@ -10,7 +10,7 @@ const paragraphs = [
 function onSelectionEnd(range: Range | null) {
   if (range) {
     const text = range.toString()
-    console.warn('selection ended:', text)
+    console.warn(text)
   }
 }
 
