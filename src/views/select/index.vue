@@ -15,17 +15,20 @@ const selectionRange = ref<Range | null>(null)
 const startRange = ref<Range | null>(null)
 
 function getRangeFromPoint(x: number, y: number): Range | null {
-  if (!document.caretRangeFromPoint) return null
+  if (!document.caretRangeFromPoint)
+    return null
   const range = document.caretRangeFromPoint(x, y)
   return range
 }
 
 function handleTouchStart(e: TouchEvent) {
-  if (e.touches.length !== 1) return
+  if (e.touches.length !== 1)
+    return
   const touch = e.touches[0]
 
   const selection = window.getSelection()
-  if (!selection) return
+  if (!selection)
+    return
 
   // 如果已有选择，检查点击位置是否在选择区域边界附近
   // 如果是，不重置选择，让浏览器处理手柄拖拽
@@ -41,7 +44,8 @@ function handleTouchStart(e: TouchEvent) {
 
   // 点击在选区外，开始新的选择
   const range = getRangeFromPoint(touch.clientX, touch.clientY)
-  if (!range) return
+  if (!range)
+    return
 
   startRange.value = range
   selectionRange.value = range
@@ -52,7 +56,8 @@ function handleTouchStart(e: TouchEvent) {
 
 function isPointInRange(x: number, y: number, range: Range): boolean {
   const rects = range.getClientRects()
-  if (rects.length === 0) return false
+  if (rects.length === 0)
+    return false
 
   const padding = 10
   for (let i = 0; i < rects.length; i++) {
@@ -70,15 +75,18 @@ function isPointInRange(x: number, y: number, range: Range): boolean {
 }
 
 function handleTouchMove(e: TouchEvent) {
-  if (e.touches.length !== 1 || !startRange.value) return
+  if (e.touches.length !== 1 || !startRange.value)
+    return
   e.preventDefault()
 
   const touch = e.touches[0]
   const range = getRangeFromPoint(touch.clientX, touch.clientY)
-  if (!range) return
+  if (!range)
+    return
 
   const selection = window.getSelection()
-  if (!selection) return
+  if (!selection)
+    return
 
   selection.removeAllRanges()
 
@@ -113,7 +121,8 @@ function handleTouchEnd() {
 function handleSelectionChange() {
   console.log('[select] selectionchange', window.getSelection()?.toString())
   const selection = window.getSelection()
-  if (!selection || selection.isCollapsed) return
+  if (!selection || selection.isCollapsed)
+    return
   if (selection.rangeCount > 0) {
     selectionRange.value = selection.getRangeAt(0)
   }
