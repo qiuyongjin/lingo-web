@@ -7,8 +7,7 @@ let cleanupExpand: (() => void) | null = null
 
 function onSelectionEnd(range: Range | null) {
   if (range) {
-    const text = range.toString()
-    console.warn(text)
+    // console.warn(range.toString())
   }
 }
 
@@ -31,7 +30,7 @@ function onWordClick(word: string, range: Range | null, _x: number, _y: number) 
   if (!sentence)
     return
 
-  console.warn(sentence)
+  // console.warn(sentence)
   const data = {
     type: 'clickWord',
     payload: {
