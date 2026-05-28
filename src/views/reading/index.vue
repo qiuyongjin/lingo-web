@@ -1,22 +1,33 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted } from 'vue'
 import SlideSelect from '@/components/SlideSelect/index.vue'
-import { buildSentenceWithHighlight, sentence, useSentence } from '@/views/reading/index.ts'
+import { buildSentenceWithClickedWord, sentence, useSentence } from '@/views/reading/index.ts'
 
 let cleanupExpand: (() => void) | null = null
 
 function onSelectionEnd(range: Range | null) {
-  return
   if (range) {
     const text = range.toString()
     console.warn(text)
   }
 }
 
-function onWordClick(word: string, range: Range | null) {
-  console.warn(word)
-  return
-  const sentence = buildSentenceWithHighlight(word, range)
+function onWordClick(word: string, range: Range | null, _x: number, _y: number) {
+  // Get the paragraph element containing this word
+  let paragraphEl: Element | null = null
+  if (range) {
+    let node: Node | null = range.startContainer
+    while (node && node.nodeType !== Node.ELEMENT_NODE) {
+      node = node.parentNode
+    }
+    // Walk up to find p element
+    while (node && node.nodeName !== 'P' && node.nodeName !== 'DIV') {
+      node = node.parentNode
+    }
+    paragraphEl = node as Element | null
+  }
+
+  const sentence = buildSentenceWithClickedWord(paragraphEl, word, range)
   if (!sentence)
     return
 
