@@ -11,7 +11,7 @@ function onSelectionEnd(range: Range | null) {
   }
 }
 
-function onWordClick(word: string, range: Range | null, _x: number, _y: number) {
+function onWordClick(word: string, range: Range | null, x: number, y: number) {
   // Get the paragraph element containing this word
   let paragraphEl: Element | null = null
   if (range) {
@@ -35,8 +35,8 @@ function onWordClick(word: string, range: Range | null, _x: number, _y: number) 
     type: 'clickWord',
     payload: {
       word,
-      line: 0,
-      wordIndex: 1,
+      line: x,
+      wordIndex: y,
       titleOrBody: 'body',
       sentence,
     },
