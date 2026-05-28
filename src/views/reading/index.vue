@@ -79,7 +79,7 @@ onUnmounted(() => {
       @click="onWordClick"
     />
     <SlideSelect
-      class="text-28px text-#cdcdcd"
+      class="text-26px text-#cdcdcd"
       :content="useSentence.body"
       @selection-end="onSelectionEnd"
       @click="onWordClick"
