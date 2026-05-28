@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { sentence, target, updateHeight } from '@/views/read'
+import { nextTick } from 'vue'
+import { sentence, target, updateHeight } from '@/views/reading'
 
 function init() {
   if (!window.nativeBridge)
@@ -24,16 +25,17 @@ function init() {
     }
     if (type === 'setContent') {
       sentence.value = payload.data
-      updateHeight()
+      // window.nativeBridge.send({ type: 'debug', payload: { data: sentence.value } })
+      nextTick(() => {
+        updateHeight()
+      })
     }
-  }
-
-  window.onload = () => {
-    window.nativeBridge.send({ type: 'bridgeReady' })
   }
 }
 
-init()
+window.onload = () => {
+  init()
+}
 </script>
 
 <template>
