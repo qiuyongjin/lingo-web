@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-type FontWeight = 'normal' | 'bold' | 'lighter' | 'bolder' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
-
 const props = withDefaults(defineProps<{
   content: string
   highlightColor?: string
-  textColor?: string
   fontSize?: string
-  fontWeight?: FontWeight
 }>(), {
   highlightColor: 'rgb(255, 141, 40)',
-  textColor: '#c3c3c3',
   fontSize: '22px',
-  fontWeight: 'normal',
 })
 
 const emit = defineEmits<{
@@ -274,22 +268,18 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+*::selection,
+*::-webkit-selection {
+  color: #fff !important;
+  background-color: #ff8c286e !important;
+}
+
 .slide-select {
   box-sizing: border-box;
-  color: v-bind(textColor);
   font-size: v-bind(fontSize);
-  font-weight: v-bind(fontWeight);
+  line-height: 1.32;
   user-select: text;
   -webkit-user-select: text;
   cursor: text;
-  line-height: 1.6;
-}
-
-.slide-select p {
-  margin: 30px 0;
-}
-
-.slide-select ::selection {
-  background: v-bind(highlightColor);
 }
 </style>
