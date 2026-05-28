@@ -10,7 +10,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   selectionEnd: [range: Range | null]
-  click: [word: string, x: number, y: number]
+  click: [word: string, range: Range | null, x: number, y: number]
 }>()
 
 const paragraphs = computed(() => props.content.split('\n'))
@@ -70,7 +70,7 @@ function handleClick(e: MouseEvent) {
 
   const result = getWordAtPoint(e.clientX, e.clientY)
   if (result) {
-    emit('click', result.word, e.clientX, e.clientY)
+    emit('click', result.word, result.range, e.clientX, e.clientY)
   }
 }
 
