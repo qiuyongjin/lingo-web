@@ -273,5 +273,12 @@ onUnmounted(() => {
   box-sizing: border-box;
   line-height: 1.32;
   cursor: text;
+  p {
+    margin-bottom: 1em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 </style>
