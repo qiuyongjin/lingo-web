@@ -87,11 +87,19 @@ function handleClick(e: MouseEvent) {
   }
 
   const result = getWordAtPoint(e.clientX, e.clientY)
+  removeAllRanges()
+
   if (!result) {
     return
   }
 
   emit('click', result.word, result.range, e.clientX, e.clientY)
+}
+
+// 彻底清除选择内容
+function removeAllRanges() {
+  window.getSelection()?.removeAllRanges()
+  selectionRange.value = null
 }
 
 function getRangeFromPoint(x: number, y: number): Range | null {
