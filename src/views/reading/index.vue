@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted } from 'vue'
 import SlideSelect from '@/components/SlideSelect/index.vue'
-import { initWordBoundaryExpand } from '@/utils/word-boundary-expand'
 import { buildSentenceWithHighlight, sentence, useSentence } from '@/views/reading/index.ts'
 
 let cleanupExpand: (() => void) | null = null
 
 function onSelectionEnd(range: Range | null) {
+  return
   if (range) {
     const text = range.toString()
     console.warn(text)
@@ -14,6 +14,8 @@ function onSelectionEnd(range: Range | null) {
 }
 
 function onWordClick(word: string, range: Range | null) {
+  console.warn(word)
+  return
   const sentence = buildSentenceWithHighlight(word, range)
   if (!sentence)
     return

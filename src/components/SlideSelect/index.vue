@@ -245,19 +245,25 @@ function handleTouchEnd() {
 }
 
 onMounted(() => {
-  document.addEventListener('touchstart', handleTouchStart, { passive: true })
-  document.addEventListener('touchmove', handleTouchMove, { passive: false })
-  document.addEventListener('touchend', handleTouchEnd)
-  document.addEventListener('touchcancel', handleTouchEnd)
-  rootEl.value?.addEventListener('click', handleClick)
+  if (!rootEl.value)
+    return
+
+  rootEl.value.addEventListener('touchstart', handleTouchStart, { passive: true })
+  rootEl.value.addEventListener('touchmove', handleTouchMove, { passive: false })
+  rootEl.value.addEventListener('touchend', handleTouchEnd)
+  rootEl.value.addEventListener('touchcancel', handleTouchEnd)
+  rootEl.value.addEventListener('click', handleClick)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('touchstart', handleTouchStart)
-  document.removeEventListener('touchmove', handleTouchMove)
-  document.removeEventListener('touchend', handleTouchEnd)
-  document.removeEventListener('touchcancel', handleTouchEnd)
-  rootEl.value?.removeEventListener('click', handleClick)
+  if (!rootEl.value)
+    return
+
+  rootEl.value.removeEventListener('touchstart', handleTouchStart)
+  rootEl.value.removeEventListener('touchmove', handleTouchMove)
+  rootEl.value.removeEventListener('touchend', handleTouchEnd)
+  rootEl.value.removeEventListener('touchcancel', handleTouchEnd)
+  rootEl.value.removeEventListener('click', handleClick)
 })
 </script>
 
