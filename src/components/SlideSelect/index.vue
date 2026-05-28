@@ -272,8 +272,6 @@ onUnmounted(() => {
 .slide-select {
   box-sizing: border-box;
   line-height: 1.32;
-  user-select: text;
-  -webkit-user-select: text;
   cursor: text;
 }
 </style>

@@ -73,13 +73,13 @@ onUnmounted(() => {
 <template>
   <div class="page">
     <SlideSelect
-      class="text-38px text-#ff8d28 font-bold"
+      class="text-38px text-#ff8d28 font-black"
       :content="useSentence.title"
       @selection-end="onSelectionEnd"
       @click="onWordClick"
     />
     <SlideSelect
-      class="text-28px text-#aaaaaa"
+      class="text-28px text-#cdcdcd"
       :content="useSentence.body"
       @selection-end="onSelectionEnd"
       @click="onWordClick"
