@@ -5,23 +5,18 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'read',
-      component: () => import('@/views/read/index.vue'),
+      name: 'home',
+      component: () => import('@/views/home/index.vue'),
     },
     {
-      path: '/select',
-      name: 'select',
-      component: () => import('@/views/select/index.vue'),
+      path: '/reading',
+      name: 'reading',
+      component: () => import('@/views/reading/index.vue'),
     },
     {
       path: '/demo',
       name: 'demo',
       component: () => import('@/views/demo/index.vue'),
-    },
-    {
-      path: '/home',
-      name: 'home',
-      component: () => import('@/views/home/index.vue'),
     },
   ],
 })
