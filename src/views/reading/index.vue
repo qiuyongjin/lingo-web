@@ -2,7 +2,7 @@
 import { nextTick, onMounted, onUnmounted } from 'vue'
 import SlideSelect from '@/components/SlideSelect/index.vue'
 import { initWordBoundaryExpand } from '@/utils/word-boundary-expand'
-import { buildSentenceWithHighlight, sentence, sentences, useSentence } from '@/views/reading/index.ts'
+import { buildSentenceWithHighlight, sentence, useSentence } from '@/views/reading/index.ts'
 
 let cleanupExpand: (() => void) | null = null
 
@@ -35,7 +35,7 @@ function onWordClick(word: string, range: Range | null) {
 }
 
 onMounted(() => {
-  cleanupExpand = initWordBoundaryExpand()
+  // cleanupExpand = initWordBoundaryExpand()
   if (window.nativeBridge) {
     window.nativeBridge.send({ type: 'bridgeReady' })
   }
@@ -62,6 +62,9 @@ onUnmounted(() => {
   <div class="page">
     <SlideSelect
       :content="useSentence.title"
+      text-color="#ff8d28"
+      font-size="38px"
+      font-weight="bold"
       @selection-end="onSelectionEnd"
       @click="onWordClick"
     />
