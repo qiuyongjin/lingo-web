@@ -27,6 +27,7 @@ const selectionRange = ref<Range | null>(null)
 const startRange = ref<Range | null>(null)
 const interactionMode = ref<'idle' | 'selecting' | 'scrolling'>('idle')
 const startPos = ref({ x: 0, y: 0 })
+const rootEl = ref<HTMLElement | null>(null)
 
 defineExpose({
   getSelection: () => selectionRange.value,
@@ -229,7 +230,7 @@ onMounted(() => {
   document.addEventListener('touchmove', handleTouchMove, { passive: false })
   document.addEventListener('touchend', handleTouchEnd)
   document.addEventListener('touchcancel', handleTouchEnd)
-  document.addEventListener('click', handleClick)
+  rootEl.value?.addEventListener('click', handleClick)
 })
 
 onUnmounted(() => {
@@ -237,12 +238,12 @@ onUnmounted(() => {
   document.removeEventListener('touchmove', handleTouchMove)
   document.removeEventListener('touchend', handleTouchEnd)
   document.removeEventListener('touchcancel', handleTouchEnd)
-  document.removeEventListener('click', handleClick)
+  rootEl.value?.removeEventListener('click', handleClick)
 })
 </script>
 
 <template>
-  <div class="slide-select">
+  <div ref="rootEl" class="slide-select">
     <p v-for="(paragraph, index) in paragraphs" :key="index" v-html="paragraph" />
   </div>
 </template>
