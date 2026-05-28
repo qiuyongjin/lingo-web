@@ -85,6 +85,9 @@ let cleanupExpand: (() => void) | null = null
 
 onMounted(() => {
   cleanupExpand = initWordBoundaryExpand()
+  if (window.nativeBridge) {
+    window.nativeBridge.send({ type: 'bridgeReady' })
+  }
 })
 
 onUnmounted(() => {
