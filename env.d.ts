@@ -12,4 +12,5 @@ interface NativeBridge {
 
 interface Window {
   nativeBridge: NativeBridge
+  wrapSelectionWithBraces: () => string | null
 }
