@@ -87,9 +87,11 @@ function handleClick(e: MouseEvent) {
   }
 
   const result = getWordAtPoint(e.clientX, e.clientY)
-  if (result) {
-    emit('click', result.word, result.range, e.clientX, e.clientY)
+  if (!result) {
+    return
   }
+
+  emit('click', result.word, result.range, e.clientX, e.clientY)
 }
 
 function getRangeFromPoint(x: number, y: number): Range | null {
