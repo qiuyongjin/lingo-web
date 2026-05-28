@@ -62,6 +62,15 @@ function getWordAtPoint(x: number, y: number): { word: string, range: Range | nu
   if (!pos)
     return null
 
+  // Verify the element at point matches the offset node's container
+  // This prevents caretPositionFromPoint from returning a position
+  // in a different paragraph when clicking in whitespace between them
+  const elementAtPoint = document.elementFromPoint(x, y)
+  const targetElement = pos.offsetNode.parentElement
+  if (elementAtPoint && targetElement && !targetElement.contains(elementAtPoint)) {
+    return null
+  }
+
   const range = getWordRange(pos.offsetNode, pos.offset)
   if (!range)
     return null
