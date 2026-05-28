@@ -1,14 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   content: string
-  highlightColor?: string
-  fontSize?: string
-}>(), {
-  highlightColor: 'rgb(255, 141, 40)',
-  fontSize: '22px',
-})
+}>()
 
 const emit = defineEmits<{
   selectionEnd: [range: Range | null]
@@ -276,7 +271,6 @@ onUnmounted(() => {
 
 .slide-select {
   box-sizing: border-box;
-  font-size: v-bind(fontSize);
   line-height: 1.32;
   user-select: text;
   -webkit-user-select: text;
